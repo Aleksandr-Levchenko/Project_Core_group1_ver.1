@@ -1,7 +1,7 @@
 from pathlib import Path
 import os, sys
 import platform  # для clearscrean()
-from RecordBook import AddressBook, Record, Name, Phone, Field, Birthday, PhoneException, BirthdayException, EmailException
+from RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
 from clean import sort_main
 from note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
@@ -42,10 +42,10 @@ def main():
             print("Command was not recognized")
             continue
         
-        if cmd in ["add", "phone", "add phone", "del phone", "change phone",
-                     "show book", "change birthday", "birthday", "search", 
-                     "close", "exit", "good bye", 
-                     "show all", "hello", "cls", "help", 
+        if cmd in ["add", "phone", "add phone", # "del phone", "change birthday", "change phone", 
+                     "show book", "birthday", "search", 
+                     "close", "exit", "good bye",
+                     "show all", "hello", "cls", "help", "remove", "change", "add email", "add address", "add birthday", 
                      "note add", "note change", "note del", 
                      "note find", "note show", "note sort", "sort"]: result = handler(prm)
         elif cmd in ["save", "load"]: result = handler(path_book)     
@@ -206,30 +206,75 @@ def note_sort(args):
 #=========================================================
 @input_error
 def func_add_rec(prm):
-    # порахуємо кількість параметрів
+    args = prm.split(" ")
+    if not prm.partition(" ")[0].capitalize() in book.keys():
+        name = Name(args[0].capitalize())
+        phone = Phone(args[1] if len(args) >= 2 else "None")
+        email = Email(args[2] if len(args) >= 3 else "None")
+        birthday = Birthday(args[3] if len(args) >= 4 else "None")
+        address = Address(' '.join(args[4:]) if len(args) >= 5 else "None")
+        rec = Record(name, phone, email, birthday, address) 
+        return book.add_record(rec)
+    else: return "The person is already in database"
+
+#=========================================================
+# >> add phone    Done
+# функція розширює новим телефоном існуючий запис особи Mike   
+# >> add phone Mike +380509998877
+#=========================================================
+@input_error
+def add_phone(prm):
+    args = prm.split(" ")
     count_prm = get_count_prm(prm)
-        
-    if prm and (count_prm >= 3):
-        # Якщо ключ (ІМ'Я) що користувач хоче ДОДАТИ не ІСНУЄ тобто можемо додавати
-        if not prm.partition(" ")[0].capitalize() in book.keys():
-            name = prm.partition(" ")[0]
-            new_name = Name(prm.partition(" ")[0].capitalize())
-            prm = prm.removeprefix(f"{name} ")
-            
-            new_birthday = Birthday(prm.partition(" ")[0])
-            
-            # формуємо список телефонів
-            lst_phones = list(map(lambda phone: Phone(phone.strip()), prm.partition(" ")[2].split(",")))
-            
-            rec = Record(name=new_name, birthday=new_birthday, phones=lst_phones)
-            book.add_record(rec)
-            
-            return "1 record was successfully added - [bold green]success[/bold green]"
-        else: return "The person is already in database"  # Повернемо помилку -> "Неможливо дадати існуючу людину"
-    else:
-        return f"Expected 3 arguments, but {count_prm} was given.\nHer's an example >> add Mike 02.10.1990 +380504995876"
-     
-     
+    if prm and (count_prm >= 2):
+        if args[0].capitalize() in book.keys():
+            rec = book[args[0].capitalize()]
+            if book[args[0].capitalize()].phones[0].value == "None": 
+                book[args[0].capitalize()].phones.clear()
+            return rec.add_phone(Phone(args[1]))
+        else: return f"The person [bold red]{args[0].capitalize()}[/bold red] isn't in a database"
+    else: return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add phone Mike +380509998877"
+
+#=========================================================
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти контакта Email. 
+# Вместо ... пользователь вводит ИМЯ и Email, обязательно через пробел.
+# example >> add email Mike mike.djonsen@gmail.com
+#=========================================================
+@input_error 
+def add_email(prm) -> str:
+    args = prm.split(" ")
+    rec = book[args[0].capitalize()]
+    email = Email(args[1])
+    rec.add_email(email)
+    return f'The contact "{args[0].capitalize()}" was updated with new email: {rec.email}'
+
+#=========================================================
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти контакта Address. 
+# Вместо ... пользователь вводит ИМЯ и address, адресу можна вводити як завгодно.
+# example >> add address Mike Stepan Banderi Avenue, 11A
+#=========================================================
+@input_error 
+def add_address(prm) -> str:
+    args = prm.split(" ")
+    rec = book[args[0].capitalize()]
+    rec.add_address(args[1:])
+    return f'The contact "{args[0].capitalize()}" was updated with new address: {rec.address}'
+
+#=========================================================
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти контакта birthday. 
+# Вместо ... пользователь вводит ИМЯ и birthday, обязательно через пробел.
+# example >> add birthday 31.12.2000
+#=========================================================
+@input_error
+def add_birthday(prm) -> str:
+    args = prm.split(" ")
+    rec = book[args[0].capitalize()]
+    rec.add_to_birthday(Birthday(args[1])) 
+    return f"Date of birth {args[0].capitalize()}, recorded"
+
 #=========================================================
 # >> show all         Done
 # По этой команде бот выводит все сохраненные контакты 
@@ -241,12 +286,14 @@ def func_all_phone(_)->str:
         return "The database is empty"
     else: 
         table = Table(box=box.DOUBLE)
-        table.add_column("Name", justify="left", style="cyan", no_wrap=True)
+        table.add_column("Name", justify="center", style="cyan", no_wrap=True)
         table.add_column("Birthday", justify="center", style="yellow", no_wrap=True)
-        table.add_column("Phone number", justify="left", style="green", no_wrap=True)
-        
+        table.add_column("Phone number", justify="center", style="green", no_wrap=True)
+        table.add_column("Email", justify="center", style="red", no_wrap=True)
+        table.add_column("Address", justify="center", style="red", no_wrap=True)
+
         console = Console()
-        result = [table.add_row(record.name.value, record.birthday.value, ', '.join(map(lambda phone: phone.value, record.phones))) for record in book.data.values()]
+        _ = [table.add_row(str(record.name.value), str(record.birthday.value), str(', '.join(map(lambda phone: phone.value, record.phones))), str(record.email.value), str(record.address.value)) for record in book.data.values()]
         console.print(table)
         return ""
         
@@ -276,40 +323,6 @@ def func_book_pages(prm):
         print("Press [bold red]Enter [/bold red]", end="")
         input("to continue next page...")
     return f"End of the book" 
-
-
-#=========================================================
-# >> change phone... Done
-# По этой команде бот сохраняет в памяти новый номер телефона 
-# для существующего контакта. 
-# Вместо [...] пользователь вводит [Ім'я] [старий Номер телефона] [Новий номер], 
-# Увага: обязательно через пробел!!!
-# >> change phone Mike +38099 +38050777
-#=========================================================
-@input_error 
-def func_change_phone(prm):
-    # порахуємо кількість параметрів
-    count_prm = get_count_prm(prm)
-    if prm and (count_prm >= 3):
-        name = prm.partition(" ")[0].lower().capitalize()
-            
-        if name in book.keys():
-            lst = prm.split()
-            if not lst[1].isdigit():   # old_phone = None
-                old_phone = lst[1].lower().capitalize() # change phone stive 380502220011 380990005511
-            else: old_phone = f"+{lst[1]}" if not lst[1].startswith("+") else lst[1]   
-            
-            # перевіремо наявність телефону що будемо замінювати у базі даних
-            number_exists = any(phone.value == old_phone for phone in book[name].phones)
-            if number_exists:
-                return book[name].edit_phone(Phone(lst[1]), Phone(lst[2]))
-            else:
-                return f"The phone {lst[1]} for {name} isn't in the database - [bold red]fail[/bold red]"
-        else:
-            return f"The record {name} wasn't found in the database - [bold red]fail[/bold red]"
-    else: 
-        return f"Expected 3 arguments, but {count_prm} was given.\nHer's an example >> change phone Mike +0449587612 +380995437856"
-
 
 #=========================================================
 # >> "good bye", "close", "exit"
@@ -347,61 +360,6 @@ def func_phone(prm):
         else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
     else:
         return f"The {name} isn't in the database"  
-    
-
-#=========================================================
-# >> add phone    Done
-# функція розширює новіми телефонами існуючий запис особи Mike   
-# >> add phone Mike +380509998877, +380732225566
-#=========================================================
-@input_error
-def func_add_phone(prm):
-    count_prm = get_count_prm(prm)
-    
-    prm = prm.split(" ")
-    if prm[0] == "": return f'Missed "Name" of the person'
-    
-    if prm and (count_prm >= 2):
-        name = prm[0].lower().capitalize()
-        if name in book.keys():   
-            prm.remove(prm[0])  
-            if book[name].phones[0].value == "None": 
-                book[name].phones.clear()
-            
-            # перевіремо наявність телефонів у базі даних, які будемо додавати
-            for new_phone in prm:
-                new_phone = re.sub("\D", "", new_phone) # залишимо тільки цифри
-                new_phone = f"+{new_phone}" if not new_phone.startswith("+") else new_phone
-                for phone in book[name].phones:
-                    if phone.value == new_phone: raise PhoneException(f"The phone {phone.value} already exists")
-                     
-            # приберемо коми із телефонів    
-            lst_add_phones = list(map(lambda phone: Phone(re.sub(",", "", phone)), prm))
-            return book[name].add_phone(lst_add_phones)  # викликаємо Метод класу 
-        else:
-            return f"The person [bold red]{name}[/bold red] isn't in a database"
-    else: return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add phone Mike +380509998877"
-
-
-#=========================================================
-# >> change birthday    Done
-# функція змінює день народження для особи    
-# Example >> change birthday Mike 12.05.1990
-#=========================================================
-@input_error
-def func_change_birthday(prm):
-    count_prm = get_count_prm(prm)
-    prm = prm.split(" ")
-    if prm[0] == "": return f'Missed "Birthday" of the person'
-    
-    if prm and (count_prm >= 2):
-        name = prm[0].lower().capitalize()
-        if name in book.keys():
-            date = prm[1]
-            return book[name].change_birthday(Birthday(date))
-        else: return f"The [bold red]{name}[/bold red] isn't in a database"
-    else: return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> change birthday Mike 12.05.1990"
-
 
 #=========================================================
 # >> birthday    Done
@@ -430,40 +388,72 @@ def func_get_day_birthday(prm):
             else: return f"The [bold red]{name}[/bold red] isn't in a database"
     else: return f"Expected 1 arguments, but {count_prm} was given.\nHer's an example >> birthday Mike"
 
+# ======================================================================================================
+# =========================================[ remove ]===================================================
+# ======================================================================================================
 
-#=========================================================
-# >> del phone    Done
-# функція видаляє телефон або список телефонів в існуючому записі особи Mike   
-# >> del phone Mike +380509998877, +380732225566
-#=========================================================   
-@input_error 
-def func_del_phone(prm):
-    count_prm = get_count_prm(prm)
-    
-    prm = prm.split(" ")
-    if prm[0] == "": return f'Missed "Name" of the person'
-    
-    if prm and (count_prm >= 2):
-        name = prm[0].lower().capitalize()
-        if name in book.keys():
-            prm.remove(prm[0])  
-            
-            old_phone = re.sub("\D", "", prm[0]) # залишимо тільки цифри
-            old_phone = f"+{old_phone}" if not old_phone.startswith("+") else old_phone
-            # перевіремо наявність телефону що будемо видаляти із бази даних
-            number_exists = any(phone.value == old_phone for phone in book[name].phones)
-            if number_exists:
-                # приберемо коми із телефонів
-                # формуємо список  об'єктів Phone, тому що на майбутнє хочу реалізувати видалення декількох телефонів 
-                lst_del_phones = list(map(lambda phone: Phone(re.sub(",", "", phone)), prm)) 
-                return book[name].del_phone(lst_del_phones[0])
-            else:
-                return f"The phone {prm[0]} isn't in the database - [bold red]fail[/bold red]"
-            
-        else:
-            return f"The name {name} isn't in database - [bold red]fail[/bold red]"
-    else: return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> del phone Mike +380509998877"
+@input_error
+def remove(prm:str):
+    args = prm.split(" ")
+    rec = book[args[1].capitalize()]
+    if args[0].lower() == "name":
+        if book[args[1].capitalize()].name.value == args[1].capitalize():
+            del book[args[1].capitalize()]
+            return f"{args[1].capitalize()} is deleted from the contact book"
+        
+    elif args[0].lower() == "phone":
+        num = rec.remove_phone(Phone(args[2]))
+        if num == "This contact has no phone numbers saved": return num
+        return f"Phone number {args[1].capitalize()} : {num}\nDeleted"
 
+    elif args[0].lower() == "email":
+        rec.remove_email(Email(args[2]))
+        return f"{args[1].capitalize()}'s email has been removed from the contact list"
+
+    elif args[0].lower() == "birthday":
+        rec.remove_birthday(Birthday(args[2]))
+        return f"{args[1].capitalize()}'s birthday has been removed from the contact list"
+
+    elif args[0].lower() == "address":
+        rec.remove_address()
+        return f'address removed from {args[1].capitalize()}\'s profile'
+    else:
+        return "якийсь Error remove"
+    
+# ======================================================================================================
+# =========================================[ change ]===================================================
+# ======================================================================================================
+
+@input_error
+def change(prm:str):
+    args = prm.split(" ")
+    rec = book[args[1].capitalize()]
+    if args[0].lower() == "name":
+        if not args[2].capitalize() is book.data.keys():
+            rec = book[args[1].capitalize()]
+            rec.change_name(Name(args[1].capitalize()), Name(args[2].capitalize()))
+            book.data.pop(args[1].capitalize())
+            book[args[2].capitalize()] = rec
+            return f"Contact name {args[1].capitalize()}`s changed to {args[2].capitalize()}'s"
+        else: return f"Contact with the name {args[2].capitalize()}'s already exists"
+
+    elif args[0].lower() == "phone":
+        if rec: return rec.change_phone(Phone(args[2]), Phone(args[3]))
+        return f"Contact wit name {args[1].capitalize()} doesn`t exist."
+
+    elif args[0].lower() == "email":
+        rec.change_email(Email(args[2]), Email(args[3]))
+        return f"Email is profile {args[1].capitalize()}'s has been changed"
+
+    elif args[0].lower() == "birthday":
+        rec.change_birthday(Birthday(args[2]), Birthday(args[3]))
+        return f"Birthday profile {args[1].capitalize()}'s has been changed"
+
+    elif args[0].lower() == "address":
+        rec.change_address(Address(args[2:]))
+        return f'The contact "{args[1].capitalize()}" was updated with new address: {rec.address}'
+    else:
+        return "якийсь Error change"
 
 #=========================================================
 # >> search    Done
@@ -473,7 +463,7 @@ def func_del_phone(prm):
 #                      >> search none
 #=========================================================
 @input_error
-def  func_search(prm):
+def func_search(prm):
     count_prm = get_count_prm(prm)
     
     prm = prm.split(" ")
@@ -612,7 +602,7 @@ COMMANDS = ["good bye", "close", "exit",
             "hello", "add", "phone", "show all", "save", "load", 
             "cls", "add phone", "del phone", "change phone", "show book",
             "change birthday", "birthday", "help", "search",
-            "note add", "note del", "note change", "note find", "note show", "note sort", "sort"]
+            "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "remove", "change", "add email", "add address", "add birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "hello": func_greeting, 
@@ -622,13 +612,15 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "save": save_phoneDB,
               "load": load_phoneDB,
               "cls": clear_screen,
-              "add phone": func_add_phone,
-              "del phone": func_del_phone,              
-              "change phone": func_change_phone,
               "show book": func_book_pages,
-              "change birthday": func_change_birthday,
               "birthday": func_get_day_birthday,
-              "help": func_help,
+              "help": func_help,              
+              "add phone": add_phone,
+              "add email" : add_email,
+              "add address" : add_address,
+              "add birthday" : add_birthday,
+              "remove" : remove,
+              "change" : change,
               "search": func_search,
               "note add": note_add,
               "note del": note_del,
