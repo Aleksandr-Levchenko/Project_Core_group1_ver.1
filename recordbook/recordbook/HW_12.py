@@ -4,6 +4,7 @@ import os, sys
 import platform  # для clearscrean()
 from RecordBook import AddressBook, Record, Name, Phone, Field, Birthday, PhoneException, BirthdayException, EmailException
 from clean import sort_main
+import exchangerate
 from note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
 import re
@@ -494,6 +495,10 @@ def clear_screen(*args):
     return ""
 
 
+@input_error
+def func_currency(*args):
+    return exchangerate.get_currency()
+
 COMMANDS = {
     func_exit: ("exit", "end", "bye",),
     func_hello: ("hello", "hy", "welcome",),
@@ -511,6 +516,7 @@ COMMANDS = {
     func_help: ("help", "?",),
     func_search: ("search", "find", "seek"),
     func_sort: ("sort",),
+    func_currency: ("currency",),
 }
 
 COMMANDS_NOTES = {
