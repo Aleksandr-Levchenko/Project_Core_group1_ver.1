@@ -6,12 +6,6 @@ class Tag:
     def __init__(self, value=None):        
         self.__value = None
         self.value = value
-        # каждый тэг хранит список всех ноутов, к которым он привязан
-        self.notes_list = list()  # list(Note)
-
-    def delete_note(self, key:str):
-        # удаляет по ключу ноут из списка ноутов
-        pass
         
     def __str__(self):
         return str(self.value)
@@ -31,14 +25,14 @@ class Tag:
 class Note(Tag):
     pass
 
-#class Key(Tag):
-#    pass
+class Key(Tag):
+    pass
 
 class NoteRecord():    
     def __init__(self, key: str, note: Note=None, tag: Tag=None):        
         self.key = key
         self.note = note
-        self.tag = tag # тут должен быть лист тэгов, которые к нему привязаны
+        self.tag = tag
 
     def __str__(self):
         return f"{str(self.key)} {str(self.note if self.note else '')} {str(self.tag if self.tag else '')}"
@@ -49,10 +43,6 @@ class NoteRecord():
     def add_note(self, note: Note):
         self.note = note
         return f"Note {note} added."
-
-    def delete_tag(self, tag_key: str):
-        # удаляет тэг по ключу из списка своих тэгов
-        pass
 
     def del_note(self, note):
         if note == self.note:
@@ -66,20 +56,6 @@ class NoteRecord():
         return f"\nDeleted note: {old_note}\nNew note: {new_note}\nNew Tag: {self.tag}\n"
 
 class NoteBook(UserDict):
-
-    def __init__(self):
-        # список всех ноутов, быстрый поиск по ключу, ключ=гарантия уникальности
-        self.notes_dict = dict() # dict(note.key, Note)
-        # список всех тэгов, быстрый поиск по ключу, где ключ - текст самого тэга, ключ - гарантия уникальности
-        self.tags_dict = dict() # dict(tag=str, Tag)
-
-    def attach_tags_list(note_key: str, tags_list: list):
-        # пробегаем по всем ключам входного списка тэгов
-        # проверяем есть ли у нас уже такой тэг, если нету - добавляем, если есть - находим
-        # найденному (или созданному) тэгу - добавляем ему в список note_key
-        # регистрируем ноут по его ключу, и добавляем ему каждый тэг
-        pass
-
     def add_record(self, record: NoteRecord):
         self.data[record.key] = record
         return f"\nAdded new record\nwith key: {record.key}\nNote: {record.note}\nTag: {record.tag}\n"
