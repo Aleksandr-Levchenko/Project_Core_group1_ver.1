@@ -2,9 +2,9 @@
 \.DS_STORE
 build/
 *egg-info*
-*__pycache__/
+#*__pycache__/
 *.py[cod]
 *eggs*
-*.bin
-*.json
-*log.txt
+#*.bin
+#*.json
+#*log.txt
