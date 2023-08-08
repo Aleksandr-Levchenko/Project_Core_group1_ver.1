@@ -27,6 +27,7 @@ def main():
     clear_screen("")
     print("[bold white]CLI version 12.0[/bold white]")  
     print("[white]Run >> [/white][bold red]help[/bold red] - list of the commands")
+    load_phoneDB(path_book)
     
     # головний цикл обробки команд користувача
     while True:
@@ -49,6 +50,8 @@ def main():
                      "note add", "note change", "note del", 
                      "note find", "note show", "note sort", "sort"]: result = handler(prm)
         elif cmd in ["save", "load"]: result = handler(path_book)     
+        
+        save_phoneDB(path_book)
         
         # 4. Завершення роботи програми
         if result == "Good bye!":
@@ -159,10 +162,11 @@ def note_find(args):
 #=========================================================
 # >> note show <int: необов'язковий аргумент кількості рядків>
 # Передається необов'язковий аргумент кількості рядків 
-# example >> note show 15
+# example >> note show /15
 #=========================================================
 @input_error
 def note_show(args):
+    if len(note_book.data) == 0: return f"The database is empty"
     if args.startswith("/") and args[1:].isdigit():
         args = int(args[1:])
     else:
@@ -171,8 +175,7 @@ def note_show(args):
         print(f"Page {page}\n")
         for item in rec:
             print(f"{item}")
-        
-        input("\nFor next page press enter")
+        input("\nPress enter for next page")
     return ""
 
 
@@ -287,13 +290,13 @@ def func_all_phone(_)->str:
     else: 
         table = Table(box=box.DOUBLE)
         table.add_column("Name", justify="center", style="cyan", no_wrap=True)
-        table.add_column("Birthday", justify="center", style="yellow", no_wrap=True)
         table.add_column("Phone number", justify="center", style="green", no_wrap=True)
         table.add_column("Email", justify="center", style="red", no_wrap=True)
+        table.add_column("Birthday", justify="center", style="yellow", no_wrap=True)
         table.add_column("Address", justify="center", style="red", no_wrap=True)
 
         console = Console()
-        _ = [table.add_row(str(record.name.value), str(record.birthday.value), str(', '.join(map(lambda phone: phone.value, record.phones))), str(record.email.value), str(record.address.value)) for record in book.data.values()]
+        _ = [table.add_row(str(record.name.value), str(', '.join(map(lambda phone: phone.value, record.phones))), str(record.email.value), str(record.birthday.value), str(record.address.value)) for record in book.data.values()]
         console.print(table)
         return ""
         
@@ -404,14 +407,14 @@ def remove(prm:str):
     elif args[0].lower() == "phone":
         num = rec.remove_phone(Phone(args[2]))
         if num == "This contact has no phone numbers saved": return num
-        return f"Phone number {args[1].capitalize()} : {num}\nDeleted"
+        return f"Phone number {args[1].capitalize()} : {num} - Deleted"
 
     elif args[0].lower() == "email":
-        rec.remove_email(Email(args[2]))
+        rec.remove_email()
         return f"{args[1].capitalize()}'s email has been removed from the contact list"
 
     elif args[0].lower() == "birthday":
-        rec.remove_birthday(Birthday(args[2]))
+        rec.remove_birthday()
         return f"{args[1].capitalize()}'s birthday has been removed from the contact list"
 
     elif args[0].lower() == "address":
@@ -427,33 +430,35 @@ def remove(prm:str):
 @input_error
 def change(prm:str):
     args = prm.split(" ")
-    rec = book[args[1].capitalize()]
-    if args[0].lower() == "name":
-        if not args[2].capitalize() is book.data.keys():
-            rec = book[args[1].capitalize()]
-            rec.change_name(Name(args[1].capitalize()), Name(args[2].capitalize()))
-            book.data.pop(args[1].capitalize())
-            book[args[2].capitalize()] = rec
-            return f"Contact name {args[1].capitalize()}`s changed to {args[2].capitalize()}'s"
-        else: return f"Contact with the name {args[2].capitalize()}'s already exists"
+    if args[1].capitalize() in book.keys():
+        rec = book[args[1].capitalize()]
+        if args[0].lower() == "name":
+            if not args[2].capitalize() is book.data.keys():
+                rec = book[args[1].capitalize()]
+                rec.change_name(Name(args[1].capitalize()), Name(args[2].capitalize()))
+                book.data.pop(args[1].capitalize())
+                book[args[2].capitalize()] = rec
+                return f"Contact name {args[1].capitalize()}`s changed to {args[2].capitalize()}'s"
+            else: return f"Contact with the name {args[2].capitalize()}'s already exists"
 
-    elif args[0].lower() == "phone":
-        if rec: return rec.change_phone(Phone(args[2]), Phone(args[3]))
-        return f"Contact wit name {args[1].capitalize()} doesn`t exist."
+        elif args[0].lower() == "phone":
+            if rec: return rec.change_phone(Phone(args[2]), Phone(args[3]))
+            return f"Contact wit name {args[1].capitalize()} doesn`t exist."
 
-    elif args[0].lower() == "email":
-        rec.change_email(Email(args[2]), Email(args[3]))
-        return f"Email is profile {args[1].capitalize()}'s has been changed"
+        elif args[0].lower() == "email":
+            rec.change_email(Email(args[2]))
+            return f"Email is profile {args[1].capitalize()}'s has been changed"
 
-    elif args[0].lower() == "birthday":
-        rec.change_birthday(Birthday(args[2]), Birthday(args[3]))
-        return f"Birthday profile {args[1].capitalize()}'s has been changed"
+        elif args[0].lower() == "birthday":
+            rec.change_birthday(Birthday(args[2]))
+            return f"Birthday profile {args[1].capitalize()}'s has been changed"
 
-    elif args[0].lower() == "address":
-        rec.change_address(Address(args[2:]))
-        return f'The contact "{args[1].capitalize()}" was updated with new address: {rec.address}'
-    else:
-        return "якийсь Error change"
+        elif args[0].lower() == "address":
+            rec.change_address(Address(args[2:]))
+            return f'The contact "{args[1].capitalize()}" was updated with new address: {rec.address}'
+        else:
+            return "якийсь Error change"
+    else: raise BirthdayException(f"Name {args[1].capitalize()} isn't in datebase")
 
 #=========================================================
 # >> search    Done
@@ -511,7 +516,7 @@ def load_phoneDB(path):
 #========================================================= 
 @input_error
 def save_phoneDB(path):
-    return book.save_database(path_book)
+    return book.save_database(path)
     
     
 #=========================================================
@@ -600,8 +605,8 @@ def get_count_prm(prm: list):
 
 COMMANDS = ["good bye", "close", "exit",
             "hello", "add", "phone", "show all", "save", "load", 
-            "cls", "add phone", "del phone", "change phone", "show book",
-            "change birthday", "birthday", "help", "search",
+            "cls", "add phone", "show book", # "change phone", "del phone"
+            "birthday", "help", "search",                 # "change birthday"
             "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "remove", "change", "add email", "add address", "add birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,

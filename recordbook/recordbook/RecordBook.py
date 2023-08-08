@@ -69,7 +69,7 @@ class Birthday(Field):
     
     @value.setter
     def value(self, value:str):
-        print(value)
+        #print(value)
         if value.lower() == "none": 
             self.__value = "None"
         else:
@@ -124,12 +124,15 @@ class Record():
 
     def add_to_birthday(self, birthday:Birthday):
         self.birthday = birthday
+        return ""
 
     def add_email(self, email:Email) -> None: 
         self.email.value = email.value
+        return ""
 
     def add_address(self, address:Address) -> None: 
         self.address.value = ' '.join(address)
+        return ""
 
 # ======================================================================================================
 # =========================================[ remove ]===================================================
@@ -146,11 +149,11 @@ class Record():
                 self.phones.remove(n)
                 return phones
 
-    def remove_birthday(self, birthday:Birthday) -> None:
-        if self.birthday.value == birthday.value: self.birthday.value = "None"
+    def remove_birthday(self) -> None:
+        self.birthday.value = "None"
 
-    def remove_email(self, email:Email) -> None: 
-        if self.email.value == email.value: self.email.value = "None"
+    def remove_email(self) -> None: 
+        self.email.value = "None"
 
     def remove_address(self) -> None: 
         self.address.value = "None"
@@ -170,11 +173,11 @@ class Record():
                 return f"Phone {old_phone} change to {new_phone} for {self.name} contact "
         return f"Phone {old_phone} for contact {self.name} doesn`t exist"
 
-    def change_birthday(self, birthday:Birthday, new_birthday:Birthday) -> None:
-        if self.birthday.value == birthday.value: self.birthday = new_birthday
+    def change_birthday(self, new_birthday:Birthday) -> None:
+        self.birthday = new_birthday
 
-    def change_email(self, email:Email, new_email:Email) -> None: 
-        if self.email.value == email.value: self.email = new_email
+    def change_email(self, new_email:Email) -> None: 
+        self.email = new_email
 
     def change_address(self, new_address:Address) -> None: 
         self.address.value = ' '.join(new_address.value)
@@ -262,7 +265,7 @@ class AddressBook(UserDict):
 
     def get_list_birthday(self, count_day: int):
             end_date = datetime.now() + timedelta(days=int(count_day))
-            lst = [f"\nEnd date: {end_date.strftime('%d.%m.%Y')}"]
+            lst = [f"\nList of birthday before: {end_date.strftime('%d.%m.%Y')}"]
             for name, person in self.items():
                 if not (person.birthday.value == "None"): 
                     person_date = datetime.strptime(person.birthday.value, "%d.%m.%Y").date()
@@ -270,7 +273,7 @@ class AddressBook(UserDict):
                     person_day = person_date.day 
                     dt = datetime(datetime.now().year, person_month, person_day) 
                     if end_date >= dt > datetime.now(): 
-                        lst.append(f"{name}|{person.birthday.value}|{', '.join(map(lambda phone: phone.value, person.phones))}")
+                        lst.append(f"{name}|{person.birthday.value}|{', '.join(map(lambda phone: phone.value, person.phones))} - {person.days_to_birthday()}")
             return "\n".join(lst)
        
     def add_record(self, record):
@@ -294,7 +297,8 @@ class AddressBook(UserDict):
     def save_database(self, path):
         with open(path, "wb") as f_out:
             pickle.dump(self.data, f_out)
-        return f"The database is saved = {len(self.data)} records"    
+        return ""
+        #return f"The database is saved = {len(self.data)} records"
             
     # генератор посторінкового друку
     def _record_generator(self, N=10):

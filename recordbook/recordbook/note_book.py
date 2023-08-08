@@ -53,7 +53,7 @@ class NoteRecord():
         self.del_note(old_note)
         self.add_note(new_note)
         self.tag = tag        
-        return f"\nDeleted note: {old_note}\nNew note: {new_note}\nNew Tag: {self.tag}\n"
+        return f"\nChanged note: {old_note}\nNew note: {new_note}\nNew Tag: {self.tag}\n"
 
 class NoteBook(UserDict):
     def add_record(self, record: NoteRecord):
