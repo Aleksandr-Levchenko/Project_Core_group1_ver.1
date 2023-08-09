@@ -1,6 +1,6 @@
 # 
 from collections import UserDict
-from collections.abc import Iterator
+#from collections.abc import Iterator
 import re
 import pickle
 from datetime import datetime
