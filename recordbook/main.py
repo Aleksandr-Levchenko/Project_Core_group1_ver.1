@@ -551,10 +551,9 @@ def func_help(arg):
 [bold red]hello[/bold red] - вітання
 [bold red]good bye, close, exit[/bold red] - завершення програми
 [bold red]load[/bold red] - завантаження інформації про користувачів із файлу
-[bold red]save[/bold red] - збереження інформації про користувачів у файл"""
-    note = """[bold red]cls[/bold red] - очищення екрану від інформації
-
-[bold red]show all[/bold red] - друкування всієї наявної інформації про користувачів
+[bold red]save[/bold red] - збереження інформації про користувачів у файл
+[bold red]cls[/bold red] - очищення екрану від інформації"""
+    contact = """[bold red]show all[/bold red] - друкування всієї наявної інформації про користувачів
 [bold red]show book /N[/bold red]  - друкування інформації посторінково, де [bold red]N[/bold red] - кількість записів на 1 сторінку
 [bold red]add[/bold red] - додавання користувача до бази даних. 
       example >> [bold blue]add Mike[/bold blue]
@@ -576,7 +575,7 @@ def func_help(arg):
       example >> [bold blue]change birthday Mike 02.03.1990[/bold blue]
 [bold red]search[/bold red] - виконує пошук інформації по довідковій книзі
       example >> [bold blue]search Mike[/bold blue]"""
-    contact = """[bold red]note add[/bold red] - додає нотатку з тегом у записник нотаток
+    note = """[bold red]note add[/bold red] - додає нотатку з тегом у записник нотаток
       example >> [bold blue]note add My first note #Tag[/bold blue]
 [bold red]note del[/bold red] - видаляє нотатку за ключем із записника нотаток
       example >> [bold blue]note del 1691245959.0[/bold blue]
