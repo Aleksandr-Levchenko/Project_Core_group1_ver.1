@@ -89,13 +89,13 @@ class Record():
     def change_address(self, new_address:Address) -> None: 
         self.address.value = ' '.join(new_address.value)
 
-    def __str__(self):
-        return "{}{}{}{}{}".format(
-                                   f"Name: {self.name}\n", 
-                                   f'Phone: {", ".join([str(p) for p in self.phones]) if self.phones else "No phone"}\n', 
-                                   'Email: ' + str(self.email.value) + "\n" if self.email is not "None" else "Email: No email\n",
-                                   'Address: ' + str(self.address) + "\n" if self.address is not "None" else 'Address: No address\n',
-                                   'Birthday: ' + str(self.birthday.value) + "\n" if self.birthday is not "None" else "Birthday: No birthday date\n")                       
+    # def __str__(self):
+    #     return "{}{}{}{}{}".format(
+    #                                f"Name: {self.name}\n", 
+    #                                f'Phone: {", ".join([str(p) for p in self.phones]) if self.phones else "No phone"}\n', 
+    #                                'Email: ' + str(self.email.value) + "\n" if self.email is not "None" else "Email: No email\n",
+    #                                'Address: ' + str(self.address) + "\n" if self.address is not "None" else 'Address: No address\n',
+    #                                'Birthday: ' + str(self.birthday.value) + "\n" if self.birthday is not "None" else "Birthday: No birthday date\n")                       
 
     def __repr__(self):
         return "{}{}{}{}{}".format(

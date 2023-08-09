@@ -1,7 +1,7 @@
 from pathlib import Path
 import os, sys
 import platform  # для clearscrean()
-from record_book import Record, Name, Phone, Email, Birthday, Address
+from RecordBook import Record, Name, Phone, Email, Birthday, Address
 from bot_exception import EmailException, PhoneException, BirthdayException
 from address_book import AddressBook
 from clean import sort_main
@@ -289,9 +289,10 @@ def add_birthday(prm) -> str:
         rec.add_to_birthday(Birthday(args[1])) 
         return f'Date of birth "{args[0].capitalize()}", recorded'
     except KeyError:
-        return "Такого контакту немаэ"
+        return "Такого контакту нема"
     except IndexError:
         return "Не додано Birthday"
+    
 #=========================================================
 # >> show all         Done
 # По этой команде бот выводит все сохраненные контакты 
@@ -407,31 +408,36 @@ def func_get_day_birthday(prm):
 @input_error
 def remove(prm:str):
     args = prm.split(" ")
-    rec = book[args[1].capitalize()]
-    if args[0].lower() == "name":
-        if book[args[1].capitalize()].name.value == args[1].capitalize():
-            del book[args[1].capitalize()]
-            return f"{args[1].capitalize()} is deleted from the contact book"
-        
-    elif args[0].lower() == "phone":
-        num = rec.remove_phone(Phone(args[2]))
-        if num == "This contact has no phone numbers saved": return num
-        return f"Phone number {args[1].capitalize()} : {num} - Deleted"
+    if len(args) < 1: return "No username entered" 
+    if args[1].capitalize() in book.keys():
+        rec = book[args[1].capitalize()]
+        if args[0].lower() == "name":
+            if book[args[1].capitalize()].name.value == args[1].capitalize():
+                del book[args[1].capitalize()]
+                return f"{args[1].capitalize()} is deleted from the contact book"
+            
+        elif args[0].lower() == "phone":
+            if len(args) < 3: return "Phone not added" 
+            num = rec.remove_phone(Phone(args[2]))
+            if num == "This contact has no phone numbers saved": return num
+            return f"Phone number {args[1].capitalize()} : {num} - Deleted"
 
-    elif args[0].lower() == "email":
-        rec.remove_email()
-        return f"{args[1].capitalize()}'s email has been removed from the contact list"
+        elif args[0].lower() == "email":
+            rec.remove_email()
+            return f"{args[1].capitalize()}'s email has been removed from the contact list"
 
-    elif args[0].lower() == "birthday":
-        rec.remove_birthday()
-        return f"{args[1].capitalize()}'s birthday has been removed from the contact list"
+        elif args[0].lower() == "birthday":
+            rec.remove_birthday()
+            return f"{args[1].capitalize()}'s birthday has been removed from the contact list"
 
-    elif args[0].lower() == "address":
-        rec.remove_address()
-        return f'address removed from {args[1].capitalize()}\'s profile'
+        elif args[0].lower() == "address":
+            rec.remove_address()
+            return f'address removed from {args[1].capitalize()}\'s profile'
+        else:
+            return f'Such a team does "{args[0]}" not exist'
     else:
-        return "якийсь Error remove"
-    
+        return "No such contact exists"
+        
 # ======================================================================================================
 # =========================================[ change ]===================================================
 # ======================================================================================================
@@ -441,6 +447,8 @@ def change(prm:str):
     args = prm.split(" ")
     if args[1].capitalize() in book.keys():
         rec = book[args[1].capitalize()]
+        if len(args) >= 4:
+            return "Not enough arguments"
         if args[0].lower() == "name":
             if not args[2].capitalize() is book.data.keys():
                 rec = book[args[1].capitalize()]
@@ -451,6 +459,8 @@ def change(prm:str):
             else: return f"Contact with the name {args[2].capitalize()}'s already exists"
 
         elif args[0].lower() == "phone":
+            if len(args) >= 4:
+                return "Not enough arguments"
             if rec: return rec.change_phone(Phone(args[2]), Phone(args[3]))
             return f"Contact wit name {args[1].capitalize()} doesn`t exist."
 
@@ -466,7 +476,7 @@ def change(prm:str):
             rec.change_address(Address(args[2:]))
             return f'The contact "{args[1].capitalize()}" was updated with new address: {rec.address}'
         else:
-            return "якийсь Error change"
+            return f'Such a team does "{args[0]}" not exist'
     else: raise BirthdayException(f"Name {args[1].capitalize()} isn't in datebase")
 
 #=========================================================
