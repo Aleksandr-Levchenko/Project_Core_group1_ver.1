@@ -13,9 +13,11 @@ from rich.table import Table
 from rich.console import Console
 
 # Получаем абсолютный путь к запущенной программе
-absolute_path = os.path.abspath(sys.argv[0])
-path_book = Path(sys.path[0]).joinpath("data_12.bin")
-path_note = Path(sys.path[0]).joinpath("n_book.json")
+#absolute_path = os.path.abspath(sys.argv[0])
+#path_book = Path(sys.path[0]).joinpath("data_12.bin")
+#path_note = Path(sys.path[0]).joinpath("n_book.json")a
+path_book = "data_12.bin"
+path_note = "n_book.json"
 
 book = AddressBook()
 note_book = NoteBook()
