@@ -1,6 +1,5 @@
 # 
 from collections import UserDict
-#from collections.abc import Iterator
 import re
 import pickle
 from datetime import datetime
@@ -199,33 +198,12 @@ class Record():
                                    'Birthday: ' + str(self.birthday.value) + "\n" if self.birthday is not "None" else "Birthday: No birthday date\n")                       
 
 
-
-    # def __str__(self) -> str:
-    #     return f"{self.name.value}|{self.birthday.value}|{', '.join(map(lambda phone: phone.value, self.phones))}" 
-    
     # Done - розширюємо існуючий список телефонів особи - Done
     # НОВИМ телефоном або декількома телефонами для особи - Done
     def add_phone(self, new_phone: Phone) -> str:
         self.phones.append(new_phone)
         return f"The phones was/were added - [bold green]success[/bold green]"
     
-    # # Done - видаляємо телефони із списку телефонів особи - Done!
-    # def del_phone(self, del_phone: Phone) -> str:
-    #     error = True
-    #     for phone in self.phones:
-    #             if phone.value == del_phone.value: 
-    #                 self.phones.remove(phone) 
-    #                 self.phones.append(Phone("None")) if self.phones == [] else self.phones 
-    #                 error = False  #видалення пройшло з успіхом
-    #                 break
-    #     if error: return f"The error has occurred. You entered an incorrect phone number."
-    #     else: return f"The phone {phone.value} was deleted - [bold green]success[/bold green]"
-    
-    # # Done = редагування запису(телефону) у книзі особи - Done
-    # def edit_phone(self, old_phone: Phone, new_phone: Phone) -> str:
-    #     index = next((i for i, obj in enumerate(self.phones) if obj.value == old_phone.value), -1)
-    #     self.phones[index]= new_phone
-    #     return f"The person {self.name.value} has a new phone {new_phone.value} - [bold green]success[/bold green]"
     
     # повертає кількість днів до наступного дня народження
     def days_to_birthday(self):
@@ -250,11 +228,7 @@ class Record():
                 return f"до {birthday.strftime('%d.%m.%Y')} залишилося = {dif}"
         else: return f"We have no information about {self.name.value}'s birthday."
     
-    # # змінює день народження для особи
-    # def change_birthday(self, birthday: Birthday):
-    #     self.birthday = birthday
-    #     return f"Birthday for {self.name.value} is changed - [bold green]success[/bold green]"
-    
+        
     # перевіряє наявність 1(одного)телефону у списку
     def check_dublicate_phone(self, search_phone: str) ->bool:  
         result = list(map(lambda phone: any(phone.value == search_phone), self.data[self.name.value].phones))
@@ -283,8 +257,7 @@ class AddressBook(UserDict):
     # завантаження записів книги із файлу
     def load_database(self, path):
         with open(path, "rb") as fr_bin:
-            self.data = pickle.load(fr_bin)  # копирование Словника   load_data = pickle.load(fr_bin)
-                                                                    # self.data = {**load_data}
+            self.data = pickle.load(fr_bin)  # копирование Словника  
         return f"The database has been loaded = {len(self.data)} records"
     
     #-----------------------------------------
@@ -298,7 +271,7 @@ class AddressBook(UserDict):
         with open(path, "wb") as f_out:
             pickle.dump(self.data, f_out)
         return ""
-        #return f"The database is saved = {len(self.data)} records"
+        
             
     # генератор посторінкового друку
     def _record_generator(self, N=10):
@@ -316,7 +289,7 @@ class PhoneException(Exception):
     def __init__(self, message):
         self.__message = None
         self.message = message
-        #super().__init__(self.message)
+        
     
     def __str__(self):
         return f"Attention: {self.message}"

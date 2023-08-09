@@ -1,7 +1,7 @@
 from pathlib import Path
 import os, sys
-import platform  # для clearscrean()
-from recordbook.RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
+import platform 
+from recordbook.record_book import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
 from recordbook.clean import sort_main
 from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
@@ -13,10 +13,6 @@ from rich import box
 from rich.table import Table
 from rich.console import Console
 
-# Получаем абсолютный путь к запущенной программе
-#absolute_path = os.path.abspath(sys.argv[0])
-#path_book = Path(sys.path[0]).joinpath("data_12.bin")
-#path_note = Path(sys.path[0]).joinpath("n_book.json")a
 path_book = "data_12.bin"
 path_note = "n_book.json"
 
@@ -53,7 +49,7 @@ def main():
                      "help", "help sort", "help note", "help contact", 
                      "del", "change", "add email", "add address", "add birthday", 
                      "note add", "note change", "note del", 
-                     "note find", "note show", "note sort", "sort"]: result = handler(prm)
+                     "note find", "note show", "note sort", "sort dir"]: result = handler(prm)
         elif cmd in ["save", "load"]: result = handler(path_book)     
         
         save_phoneDB(path_book)
@@ -227,6 +223,7 @@ def func_add_rec(prm):
         return book.add_record(rec)
     else: return "The person is already in database"
 
+
 #=========================================================
 # >> add phone    Done
 # функція розширює новим телефоном існуючий запис особи Mike   
@@ -245,6 +242,7 @@ def add_phone(prm):
         else: return f"The person [bold red]{args[0].capitalize()}[/bold red] isn't in a database"
     else: return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add phone Mike +380509998877"
 
+
 #=========================================================
 # >> add ...  DONE
 # По этой команде бот сохраняет в памяти контакта Email. 
@@ -259,6 +257,7 @@ def add_email(prm) -> str:
     rec.add_email(email)
     return f'The contact "{args[0].capitalize()}" was updated with new email: {rec.email}'
 
+
 #=========================================================
 # >> add ...  DONE
 # По этой команде бот сохраняет в памяти контакта Address. 
@@ -272,6 +271,7 @@ def add_address(prm) -> str:
     rec.add_address(args[1:])
     return f'The contact "{args[0].capitalize()}" was updated with new address: {rec.address}'
 
+
 #=========================================================
 # >> add ...  DONE
 # По этой команде бот сохраняет в памяти контакта birthday. 
@@ -284,6 +284,7 @@ def add_birthday(prm) -> str:
     rec = book[args[0].capitalize()]
     rec.add_to_birthday(Birthday(args[1])) 
     return f"Date of birth {args[0].capitalize()}, recorded"
+
 
 #=========================================================
 # >> show all         Done
@@ -307,12 +308,6 @@ def func_all_phone(_)->str:
         console.print(table)
         return ""
         
-        # старий варіант друку таблиці
-        # result = ""
-        # result = "\n".join([f"{n}|{record.birthday.value}|{', '.join(map(lambda phone: phone.value, record.phones))}" for n, record in book.data.items()])
-        # if result == "": return "The database is empty"
-        # else: return result
-    
 
 #=========================================================
 # >> show book /N
@@ -333,6 +328,7 @@ def func_book_pages(prm):
         print("Press [bold red]Enter [/bold red]", end="")
         input("to continue next page...")
     return f"End of the book" 
+
 
 #=========================================================
 # >> "good bye", "close", "exit"
@@ -372,6 +368,7 @@ def func_phone(prm):
         else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
     else:
         return f"The {name} isn't in the database"  
+
 
 #=========================================================
 # >> birthday    Done
@@ -415,7 +412,8 @@ def delete(prm:str):
         
     elif args[0].lower() == "phone":
         num = rec.remove_phone(Phone(args[2]))
-        if num == "This contact has no phone numbers saved": return num
+        if num == "This contact has no phone numbers saved": 
+            return num
         return f"Phone number {args[1].capitalize()} : {num} - Deleted"
 
     elif args[0].lower() == "email":
@@ -448,7 +446,8 @@ def change(prm:str):
                 book.data.pop(args[1].capitalize())
                 book[args[2].capitalize()] = rec
                 return f"Contact name {args[1].capitalize()}`s changed to {args[2].capitalize()}'s"
-            else: return f"Contact with the name {args[2].capitalize()}'s already exists"
+            else: 
+                return f"Contact with the name {args[2].capitalize()}'s already exists"
 
         elif args[0].lower() == "phone":
             if len(args) >= 4 and rec: 
@@ -456,7 +455,7 @@ def change(prm:str):
                 return ""
             else:                                                 
                 raise PhoneException(f"Check parameters for command >> change pnone")
-                return f"Contact wit name {args[1].capitalize()} doesn`t exist."
+                #return f"Contact wit name {args[1].capitalize()} doesn`t exist."
             
 
         elif args[0].lower() == "email":
@@ -496,9 +495,12 @@ def func_search(prm):
                 lst_result.append(rec_str)
                 
         s = "\n".join([rec for rec in lst_result])
-        if lst_result: return f"[bold green]Search results:[/bold green]\n{s}"
-        else: return f"No matches found for {prm[0]}"
-    else: return f"Expected 1 arguments, but {count_prm} was given.\nHer's an example >> search Mike"
+        if lst_result: 
+            return f"[bold green]Search results:[/bold green]\n{s}"
+        else: 
+            return f"No matches found for {prm[0]}"
+    else: 
+        return f"Expected 1 arguments, but {count_prm} was given.\nHer's an example >> search Mike"
     
     
 # =========================================================
@@ -513,7 +515,6 @@ def func_sort(prm):
     if prm[0] == "":
         return f"[bold yellow]Enter path[/bold yellow]"
     return sort_main(prm)
-    # return f"[bold green]Sort {prm} finished:[/bold green]"
     
     
 #=========================================================
@@ -522,7 +523,6 @@ def func_sort(prm):
 @input_error
 def load_phoneDB(path):
     return book.load_database(path)
-    #return book.load_database(book, path)
 
 
 #=========================================================
@@ -537,7 +537,7 @@ def save_phoneDB(path):
 # Функція виконує парсер команд та відповідних параметрів
 #=========================================================
 def parcer_commands(cmd_line):
-    lst, tmp, cmd, prm  = [[], [], "", ""]
+    tmp, cmd, prm  = [[], "", ""]
     
     if cmd_line:
         tmp = cmd_line.split()
@@ -599,8 +599,8 @@ def func_help(arg):
       example >> [bold blue]note show /10[/bold blue]
 [bold red]note sort[/bold red] - здійснює сортування записів нотаток за тегами
       example >> [bold blue]note sort /10[/bold blue]"""
-    sort = """[bold red]sort[/bold red] - виконує сортування файлів в указаній папці
-      example >> [bold blue]sort folder_name <Path_to_folder>[/bold blue]"""
+    sort = """[bold red]sort dir[/bold red] - виконує сортування файлів в указаній папці
+      example >> [bold blue]sort dir <Path_to_folder>[/bold blue]"""
     
     if arg == "contact":
         return contact
@@ -634,9 +634,11 @@ def get_count_prm(prm: list):
 
 COMMANDS = ["good bye", "close", "exit",
             "hello", "add", "phone", "show-all", "save", "load", 
-            "cls", "add-phone", "show-book", # "change phone", "del phone"
-            "birthday", "help", "search", # "change birthday"
-            "note-add", "note-del", "note-change", "note-find", "note-show", "note-sort", "sort", "delete", "change", "add-email", "add-address", "add-birthday"]
+            "cls", "add-phone", "show-book", 
+            "birthday", "help", "search", 
+            "note-add", "note-del", "note-change", "note-find", 
+            "note-show", "note-sort", "sort dir", "delete", "change", 
+            "add-email", "add-address", "add-birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "hello": func_greeting, 
@@ -649,9 +651,6 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "show book": func_book_pages,
               "birthday": func_get_day_birthday,
               "help": func_help,
-            #   "help contact": func_help,
-            #   "help note": func_help,
-            #   "help sort": func_help,
               "add phone": add_phone,
               "add email" : add_email,
               "add address" : add_address,
@@ -665,7 +664,7 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "note find": note_find,
               "note show": note_show,
               "note sort": note_sort, 
-              "sort": func_sort}
+              "sort dir": func_sort}
 
 def complete(text, state):
     results = []
@@ -675,7 +674,8 @@ def complete(text, state):
                 results.append(cmd)
     results.append(None)
     return results[state]
-################################################################
+
+#==============================================
 # set and bind autocomplete function 
 readline.parse_and_bind("tab: complete")
 readline.set_completer(complete)
