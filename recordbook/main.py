@@ -6,7 +6,7 @@ from recordbook.clean import sort_main
 from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
 import re
-import readline
+# import readline
 
 from rich import print
 from rich import box
@@ -633,12 +633,12 @@ def get_count_prm(prm: list):
 
 
 COMMANDS = ["good bye", "close", "exit",
-            "hello", "add", "phone", "show-all", "save", "load", 
-            "cls", "add-phone", "show-book", 
+            "hello", "add", "phone", "show all", "save", "load", 
+            "cls", "add phone", "show book", 
             "birthday", "help", "search", 
-            "note-add", "note-del", "note-change", "note-find", 
-            "note-show", "note-sort", "sort dir", "delete", "change", 
-            "add-email", "add-address", "add-birthday"]
+            "note add", "note del", "note change", "note find", 
+            "note show", "note sort", "sort dir", "delete", "change", 
+            "add email", "add address", "add birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "hello": func_greeting, 
@@ -666,20 +666,21 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "note sort": note_sort, 
               "sort dir": func_sort}
 
-def complete(text, state):
-    results = []
-    if len(text) > 0:
-        for cmd in COMMANDS:        
-            if cmd.lower().startswith(text):
-                results.append(cmd)
-    results.append(None)
-    return results[state]
+# def complete(text, state):
+#     results = []
+#     if len(text) > 0:
+#         for cmd in COMMANDS:        
+#             if cmd.lower().startswith(text):
+#                 results.append(cmd)
+#     results.append(None)
+#     return results[state]
 
-#==============================================
-# set and bind autocomplete function 
-readline.parse_and_bind("tab: complete")
-readline.set_completer(complete)
+# #==============================================
+# # set and bind autocomplete function 
+# readline.parse_and_bind("tab: complete")
+# readline.set_completer(complete)
 
 if __name__ == "__main__":
     main()
   
+
