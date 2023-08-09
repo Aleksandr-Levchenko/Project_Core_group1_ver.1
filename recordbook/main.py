@@ -48,7 +48,7 @@ def main():
         if cmd in ["add", "phone", "add phone", # "del phone", "change birthday", "change phone", 
                      "show book", "birthday", "search", 
                      "close", "exit", "good bye",
-                     "show all", "hello", "cls", "help", "remove", "change", "add email", "add address", "add birthday", 
+                     "show all", "hello", "cls", "help", "help sort", "help note", "help contact", "remove", "change", "add email", "add address", "add birthday", 
                      "note add", "note change", "note del", 
                      "note find", "note show", "note sort", "sort"]: result = handler(prm)
         elif cmd in ["save", "load"]: result = handler(path_book)     
@@ -543,8 +543,8 @@ def parcer_commands(cmd_line):
 
 
 @input_error
-def func_help(_):
-    return """[bold red]cls[/bold red] - очищення екрану від інформації
+def func_help(arg):
+    note = """[bold red]cls[/bold red] - очищення екрану від інформації
 [bold red]hello[/bold red] - вітання
 [bold red]good bye, close, exit[/bold red] - завершення програми
 [bold red]load[/bold red] - завантаження інформації про користувачів із файлу
@@ -570,8 +570,8 @@ def func_help(_):
 [bold red]change birthday[/bold red] - змінює/додає Дату народження для особи
       example >> [bold blue]change birthday Mike 02.03.1990[/bold blue]
 [bold red]search[/bold red] - виконує пошук інформації по довідковій книзі
-      example >> [bold blue]search Mike[/bold blue]
-[bold red]note add[/bold red] - додає нотатку з тегом у записник нотаток
+      example >> [bold blue]search Mike[/bold blue]"""
+    contact = """[bold red]note add[/bold red] - додає нотатку з тегом у записник нотаток
       example >> [bold blue]note add My first note #Tag[/bold blue]
 [bold red]note del[/bold red] - видаляє нотатку за ключем із записника нотаток
       example >> [bold blue]note del 1691245959.0[/bold blue]
@@ -582,10 +582,18 @@ def func_help(_):
 [bold red]note show[/bold red] - здійснює посторінковий вивід всіх нотаток
       example >> [bold blue]note show /10[/bold blue]
 [bold red]note sort[/bold red] - здійснює сортування записів нотаток за тегами
-      example >> [bold blue]note sort /10[/bold blue]      
-[bold red]sort[/bold red] - виконує сортування файлів в указаній папці
-      example >> [bold blue]sort folder_name <Path_to_folder>[/bold blue]
-"""
+      example >> [bold blue]note sort /10[/bold blue]"""
+    sort = """[bold red]sort[/bold red] - виконує сортування файлів в указаній папці
+      example >> [bold blue]sort folder_name <Path_to_folder>[/bold blue]"""
+    
+    if arg == "contact":
+        return contact
+    if arg == "note":
+        return note
+    if arg == "sort":
+        return sort
+
+    return contact + note + sort
     
 @input_error
 def clear_screen(_):
@@ -609,7 +617,7 @@ def get_count_prm(prm: list):
 COMMANDS = ["good bye", "close", "exit",
             "hello", "add", "phone", "show all", "save", "load", 
             "cls", "add phone", "show book", # "change phone", "del phone"
-            "birthday", "help", "search",                 # "change birthday"
+            "birthday", "help", "search", # "change birthday"
             "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "remove", "change", "add email", "add address", "add birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
@@ -622,7 +630,10 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "cls": clear_screen,
               "show book": func_book_pages,
               "birthday": func_get_day_birthday,
-              "help": func_help,              
+              "help": func_help,
+            #   "help contact": func_help,
+            #   "help note": func_help,
+            #   "help sort": func_help,
               "add phone": add_phone,
               "add email" : add_email,
               "add address" : add_address,
