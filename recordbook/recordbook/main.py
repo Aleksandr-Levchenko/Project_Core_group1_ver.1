@@ -1,7 +1,9 @@
 from pathlib import Path
 import os, sys
 import platform  # для clearscrean()
-from RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
+from record_book import Record, Name, Phone, Email, Birthday, Address
+from bot_exception import EmailException, PhoneException, BirthdayException
+from address_book import AddressBook
 from clean import sort_main
 from note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
@@ -43,12 +45,11 @@ def main():
             print("Command was not recognized")
             continue
         
-        if cmd in ["add", "phone", "add phone", # "del phone", "change birthday", "change phone", 
-                     "show book", "birthday", "search", 
-                     "close", "exit", "good bye",
-                     "show all", "hello", "cls", "help", "remove", "change", "add email", "add address", "add birthday", 
-                     "note add", "note change", "note del", 
-                     "note find", "note show", "note sort", "sort"]: result = handler(prm)
+        if cmd in ["add birthday", "add address", "add email", "add phone", "add", 
+                   "phone", "show book", "birthday", "search", "close", "exit", 
+                   "good bye", "show all", "hello", "cls", "help", "remove", "change",   
+                    "note add", "note change", "note del", "note find", "note show", 
+                    "note sort", "sort"]: result = handler(prm)
         elif cmd in ["save", "load"]: result = handler(path_book)     
         
         save_phoneDB(path_book)
@@ -251,7 +252,7 @@ def add_email(prm) -> str:
         rec.add_email(email)
         return f'The contact "{args[0].capitalize()}" was updated with new email: {rec.email}'
     except KeyError:
-        return "Такого контакту немаэ"
+        return "Такого контакту нема"
     except IndexError:
         return "Не додано Email"
 
@@ -265,12 +266,14 @@ def add_email(prm) -> str:
 def add_address(prm) -> str:
     args = prm.split(" ")
     try:
+        if len(args[1:]) == 0 :
+            raise ValueError
         rec = book[args[0].capitalize()]
         rec.add_address(Address(args[1:]))
         return f'The contact "{args[0].capitalize()}" was updated with new address: {rec.address}'
     except KeyError:
         return "Такого контакту немаэ"
-    except TypeError:
+    except ValueError:
         return "Не додано Address"
 #=========================================================
 # >> add ...  DONE
@@ -284,7 +287,7 @@ def add_birthday(prm) -> str:
     try:
         rec = book[args[0].capitalize()]
         rec.add_to_birthday(Birthday(args[1])) 
-        return f"Date of birth {args[0].capitalize()}, recorded"
+        return f'Date of birth "{args[0].capitalize()}", recorded'
     except KeyError:
         return "Такого контакту немаэ"
     except IndexError:
@@ -307,16 +310,13 @@ def func_all_phone(_)->str:
         table.add_column("Address", justify="center", style="red", no_wrap=True)
 
         console = Console()
-        _ = [table.add_row(str(record.name.value), str(', '.join(map(lambda phone: phone.value, record.phones))), str(record.email.value), str(record.birthday.value), str(record.address.value)) for record in book.data.values()]
+        _ = [table.add_row(str(record.name.value), 
+                           str(', '.join(map(lambda phone: phone.value if phone.value != "None" else " ", 
+                           record.phones))), str(record.email.value if record.email.value != "None" else " "), 
+                           str(record.birthday.value if record.birthday.value != "None" else " "), 
+                           str(record.address.value if record.address.value != "None" else " ")) for record in book.data.values()]
         console.print(table)
         return ""
-        
-        # старий варіант друку таблиці
-        # result = ""
-        # result = "\n".join([f"{n}|{record.birthday.value}|{', '.join(map(lambda phone: phone.value, record.phones))}" for n, record in book.data.items()])
-        # if result == "": return "The database is empty"
-        # else: return result
-    
 
 #=========================================================
 # >> show book /N
@@ -348,7 +348,6 @@ def func_exit(_):
     note_book.save_data(path_note)
     return "Good bye!"
 
-
 #=========================================================
 # >> hello
 # Отвечает в консоль "How can I help you?"
@@ -356,7 +355,6 @@ def func_exit(_):
 @input_error
 def func_greeting(_):
     return "How can I help you?"
-
 
 #=========================================================
 # >> phone ... Done
@@ -614,37 +612,37 @@ def get_count_prm(prm: list):
     return count_prm
 
 
-COMMANDS = ["good bye", "close", "exit",
-            "hello", "add", "phone", "show all", "save", "load", 
-            "cls", "add phone", "show book", # "change phone", "del phone"
-            "birthday", "help", "search",                 # "change birthday"
-            "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "remove", "change", "add email", "add address", "add birthday"]
+COMMANDS = ["add birthday", "add address", "add email", "add phone", "add", 
+            "remove", "change", "good bye", "close", "exit", "show all", 
+            "hello", "phone", "save", "load", "cls", "show book", "help",
+            "birthday", "search", "sort",                
+            "note add", "note del", "note change", "note find", "note show", "note sort"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
-              "hello": func_greeting, 
+              "remove" : remove,
+              "change" : change,
+              "show all": func_all_phone,
+              "show book": func_book_pages,
+              "add birthday" : add_birthday,
+              "add address" : add_address,
+              "add email" : add_email,
+              "add phone": add_phone,
               "add": func_add_rec,
               "phone": func_phone, 
-              "show all": func_all_phone,
               "save": save_phoneDB,
               "load": load_phoneDB,
               "cls": clear_screen,
-              "show book": func_book_pages,
               "birthday": func_get_day_birthday,
-              "help": func_help,              
-              "add phone": add_phone,
-              "add email" : add_email,
-              "add address" : add_address,
-              "add birthday" : add_birthday,
-              "remove" : remove,
-              "change" : change,
+              "help": func_help, 
+              "sort": func_sort,  
+              "hello": func_greeting,            
               "search": func_search,
               "note add": note_add,
               "note del": note_del,
               "note change": note_change,
               "note find": note_find,
               "note show": note_show,
-              "note sort": note_sort, 
-              "sort": func_sort}
+              "note sort": note_sort}
 
 if __name__ == "__main__":
     main()
