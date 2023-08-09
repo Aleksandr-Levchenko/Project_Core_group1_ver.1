@@ -1,9 +1,9 @@
 from pathlib import Path
 import os, sys
 import platform  # для clearscrean()
-from RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
-from clean import sort_main
-from note_book import NoteBook, NoteRecord, Note, Tag
+from recordbook.RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
+from recordbook.clean import sort_main
+from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
 import re
 
@@ -13,9 +13,11 @@ from rich.table import Table
 from rich.console import Console
 
 # Получаем абсолютный путь к запущенной программе
-absolute_path = os.path.abspath(sys.argv[0])
-path_book = Path(sys.path[0]).joinpath("data_12.bin")
-path_note = Path(sys.path[0]).joinpath("n_book.json")
+#absolute_path = os.path.abspath(sys.argv[0])
+#path_book = Path(sys.path[0]).joinpath("data_12.bin")
+#path_note = Path(sys.path[0]).joinpath("n_book.json")a
+path_book = "data_12.bin"
+path_note = "n_book.json"
 
 book = AddressBook()
 note_book = NoteBook()
@@ -550,9 +552,9 @@ def func_help(_):
 [bold red]show all[/bold red] - друкування всієї наявної інформації про користувачів
 [bold red]show book /N[/bold red]  - друкування інформації посторінково, де [bold red]N[/bold red] - кількість записів на 1 сторінку
 [bold red]add[/bold red] - додавання користувача до бази даних. 
-      example >> [bold blue]add Mike 02.10.1990 +380504995876[/bold blue]
-              >> [bold blue]add Mike None +380504995876[/bold blue]
-              >> [bold blue]add Mike None None[/bold blue]
+      example >> [bold blue]add Mike[/bold blue]
+              >> [bold blue]add Mike <phone> <email> <birthday> <address>[/bold blue]
+              >> [bold blue]add Mike 380504995876 mike@mail.com 12.12.1970 Poltava,Soborna.str,1[/bold blue]              
 [bold red]phone[/bold red] - повертає перелік телефонів для особи
       example >> [bold blue]phone Mike[/bold blue]
 [bold red]add phone[/bold red] - додавання телефону для користувача
@@ -560,28 +562,29 @@ def func_help(_):
 [bold red]change phone[/bold red] - зміна номеру телефону для користувача
       Формат запису телефону: [bold green]+38ХХХ ХХХ ХХ ХХ[/bold green]
       example >> [bold blue]change phone Mike +380504995876 +380665554433[/bold blue]
-[bold red]del phone[/bold red] - видаляє телефон для особи. Дозволяється видаляти одразу декілька телефонів.
-      example >> [bold blue]del phone Mike +380509998877, +380732225566[/bold blue]
-[bold red]birthday[/bold red] - повертає кількість днів до Дня народження
+[bold red]del phone[/bold red] - видаляє телефон для особи. 
+      example >> [bold blue]del phone Mike +380509998877[/bold blue]
+[bold red]birthday[/bold red] - повертає кількість днів до Дня народження, або список людей, чей день народження очікується.
       example >> [bold blue]birthday Mike[/bold blue]
+      example >> [bold blue]birthday /<число днів>[/bold blue]
 [bold red]change birthday[/bold red] - змінює/додає Дату народження для особи
       example >> [bold blue]change birthday Mike 02.03.1990[/bold blue]
 [bold red]search[/bold red] - виконує пошук інформації по довідковій книзі
       example >> [bold blue]search Mike[/bold blue]
 [bold red]note add[/bold red] - додає нотатку з тегом у записник нотаток
-      example >> [bold blue]note add My first note Note[/bold blue]
+      example >> [bold blue]note add My first note #Tag[/bold blue]
 [bold red]note del[/bold red] - видаляє нотатку за ключем із записника нотаток
       example >> [bold blue]note del 1691245959.0[/bold blue]
 [bold red]note change[/bold red] - змінює нотатку з тегом за ключем у записнику нотаток
-      example >> [bold blue]note change 1691245959.0 My first note Note[/bold blue]
+      example >> [bold blue]note change 1691245959.0 My first note #Tag[/bold blue]
 [bold red]note find[/bold red] - здійснює пошук за фрагментом у записнику нотаток
-      example >> [bold blue]note find name[/bold blue]
+      example >> [bold blue]note find <fragment>[/bold blue]
 [bold red]note show[/bold red] - здійснює посторінковий вивід всіх нотаток
       example >> [bold blue]note show /10[/bold blue]
 [bold red]note sort[/bold red] - здійснює сортування записів нотаток за тегами
       example >> [bold blue]note sort /10[/bold blue]      
 [bold red]sort[/bold red] - виконує сортування файлів в указаній папці
-      example >> [bold blue]sort folder_name[/bold blue]
+      example >> [bold blue]sort folder_name <Path_to_folder>[/bold blue]
 """
     
 @input_error
