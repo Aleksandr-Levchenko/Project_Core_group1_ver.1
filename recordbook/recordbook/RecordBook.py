@@ -69,7 +69,7 @@ class Birthday(Field):
     
     @value.setter
     def value(self, value:str):
-        #print(value)
+        
         if value.lower() == "none": 
             self.__value = "None"
         else:

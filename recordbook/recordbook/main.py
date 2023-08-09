@@ -81,8 +81,6 @@ def input_error(func):
             print("Incorect data or unsupported format while writing to the file")
         except KeyError:
             print("Record isn't in the database")
-        except KeyboardInterrupt:
-            func_exit(_)
         except TypeError:
             print("Incorect data")
     return inner
@@ -247,10 +245,15 @@ def add_phone(prm):
 @input_error 
 def add_email(prm) -> str:
     args = prm.split(" ")
-    rec = book[args[0].capitalize()]
-    email = Email(args[1])
-    rec.add_email(email)
-    return f'The contact "{args[0].capitalize()}" was updated with new email: {rec.email}'
+    try:
+        rec = book[args[0].capitalize()]
+        email = Email(args[1])
+        rec.add_email(email)
+        return f'The contact "{args[0].capitalize()}" was updated with new email: {rec.email}'
+    except KeyError:
+        return "Такого контакту немаэ"
+    except IndexError:
+        return "Не додано Email"
 
 #=========================================================
 # >> add ...  DONE
@@ -261,10 +264,14 @@ def add_email(prm) -> str:
 @input_error 
 def add_address(prm) -> str:
     args = prm.split(" ")
-    rec = book[args[0].capitalize()]
-    rec.add_address(args[1:])
-    return f'The contact "{args[0].capitalize()}" was updated with new address: {rec.address}'
-
+    try:
+        rec = book[args[0].capitalize()]
+        rec.add_address(Address(args[1:]))
+        return f'The contact "{args[0].capitalize()}" was updated with new address: {rec.address}'
+    except KeyError:
+        return "Такого контакту немаэ"
+    except TypeError:
+        return "Не додано Address"
 #=========================================================
 # >> add ...  DONE
 # По этой команде бот сохраняет в памяти контакта birthday. 
@@ -274,10 +281,14 @@ def add_address(prm) -> str:
 @input_error
 def add_birthday(prm) -> str:
     args = prm.split(" ")
-    rec = book[args[0].capitalize()]
-    rec.add_to_birthday(Birthday(args[1])) 
-    return f"Date of birth {args[0].capitalize()}, recorded"
-
+    try:
+        rec = book[args[0].capitalize()]
+        rec.add_to_birthday(Birthday(args[1])) 
+        return f"Date of birth {args[0].capitalize()}, recorded"
+    except KeyError:
+        return "Такого контакту немаэ"
+    except IndexError:
+        return "Не додано Birthday"
 #=========================================================
 # >> show all         Done
 # По этой команде бот выводит все сохраненные контакты 
