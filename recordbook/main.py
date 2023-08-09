@@ -6,6 +6,7 @@ from recordbook.clean import sort_main
 from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
 import re
+import readline
 
 from rich import print
 from rich import box
@@ -632,10 +633,10 @@ def get_count_prm(prm: list):
 
 
 COMMANDS = ["good bye", "close", "exit",
-            "hello", "add", "phone", "show all", "save", "load", 
-            "cls", "add phone", "show book", # "change phone", "del phone"
+            "hello", "add", "phone", "show-all", "save", "load", 
+            "cls", "add-phone", "show-book", # "change phone", "del phone"
             "birthday", "help", "search", # "change birthday"
-            "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "del", "change", "add email", "add address", "add birthday"]
+            "note-add", "note-del", "note-change", "note-find", "note-show", "note-sort", "sort", "delete", "change", "add-email", "add-address", "add-birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "hello": func_greeting, 
@@ -665,6 +666,19 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "note show": note_show,
               "note sort": note_sort, 
               "sort": func_sort}
+
+def complete(text, state):
+    results = []
+    if len(text) > 0:
+        for cmd in COMMANDS:        
+            if cmd.lower().startswith(text):
+                results.append(cmd)
+    results.append(None)
+    return results[state]
+################################################################
+# set and bind autocomplete function 
+readline.parse_and_bind("tab: complete")
+readline.set_completer(complete)
 
 if __name__ == "__main__":
     main()
