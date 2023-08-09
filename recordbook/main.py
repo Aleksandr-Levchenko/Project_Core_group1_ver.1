@@ -544,11 +544,16 @@ def parcer_commands(cmd_line):
 
 @input_error
 def func_help(arg):
-    note = """[bold red]cls[/bold red] - очищення екрану від інформації
+    help_navigation = """[bold red]help all[/bold red] - виводить всю довідку на екран
+[bold red]help contact[/bold red] - довідка по командам адресної книги
+[bold red]help note[/bold red] - довідка по командам нотаток
+[bold red]help sort[/bold red] - довідка по командам сортувальника
 [bold red]hello[/bold red] - вітання
 [bold red]good bye, close, exit[/bold red] - завершення програми
 [bold red]load[/bold red] - завантаження інформації про користувачів із файлу
-[bold red]save[/bold red] - збереження інформації про користувачів у файл
+[bold red]save[/bold red] - збереження інформації про користувачів у файл"""
+    note = """[bold red]cls[/bold red] - очищення екрану від інформації
+
 [bold red]show all[/bold red] - друкування всієї наявної інформації про користувачів
 [bold red]show book /N[/bold red]  - друкування інформації посторінково, де [bold red]N[/bold red] - кількість записів на 1 сторінку
 [bold red]add[/bold red] - додавання користувача до бази даних. 
@@ -592,8 +597,10 @@ def func_help(arg):
         return note
     if arg == "sort":
         return sort
+    if arg == "all":
+        return help_navigation + contact + note + sort
 
-    return contact + note + sort
+    return help_navigation
     
 @input_error
 def clear_screen(_):
