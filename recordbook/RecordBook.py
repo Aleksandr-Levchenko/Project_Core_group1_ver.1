@@ -116,7 +116,7 @@ class Record():
         self.email = email
         self.birthday = birthday
         self.address = address
-        self.phones.append(phones)
+        self.phones.append(phones)      
         
 # ======================================================================================================
 # =========================================[ add ]======================================================

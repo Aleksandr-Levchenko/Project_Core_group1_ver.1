@@ -45,15 +45,19 @@ def main():
             print("Command was not recognized")
             continue
         
-        if cmd in ["add", "phone", "add phone", # "del phone", "change birthday", "change phone", 
+        if cmd in ["add", "phone", "add phone", 
                      "show book", "birthday", "search", 
                      "close", "exit", "good bye",
-                     "show all", "hello", "cls", "help", "help sort", "help note", "help contact", "remove", "change", "add email", "add address", "add birthday", 
+                     "show all", "hello", "cls", 
+                     "help", "help sort", "help note", "help contact", 
+                     "del", "change", "add email", "add address", "add birthday", 
                      "note add", "note change", "note del", 
                      "note find", "note show", "note sort", "sort"]: result = handler(prm)
         elif cmd in ["save", "load"]: result = handler(path_book)     
         
         save_phoneDB(path_book)
+        note_book.save_data(path_note)
+        
         
         # 4. Завершення роботи програми
         if result == "Good bye!":
@@ -361,7 +365,9 @@ def func_phone(prm):
     if prm[0] == "": return f'Missed "Name" of the person'
     name = prm[0].lower().capitalize()
     if name in book.keys():   
-        if prm: return ", ".join([phone.value for phone in book[name].phones])
+        if prm: 
+            res = ", ".join([phone.value for phone in book[name].phones]) 
+            return f"Person {name} doesn't have phone" if res == "None" else res
         else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
     else:
         return f"The {name} isn't in the database"  
@@ -398,7 +404,7 @@ def func_get_day_birthday(prm):
 # ======================================================================================================
 
 @input_error
-def remove(prm:str):
+def delete(prm:str):
     args = prm.split(" ")
     rec = book[args[1].capitalize()]
     if args[0].lower() == "name":
@@ -444,8 +450,13 @@ def change(prm:str):
             else: return f"Contact with the name {args[2].capitalize()}'s already exists"
 
         elif args[0].lower() == "phone":
-            if rec: return rec.change_phone(Phone(args[2]), Phone(args[3]))
-            return f"Contact wit name {args[1].capitalize()} doesn`t exist."
+            if len(args) >= 4 and rec: 
+                rec.change_phone(Phone(args[2]), Phone(args[3]))
+                return ""
+            else:                                                 
+                raise PhoneException(f"Check parameters for command >> change pnone")
+                return f"Contact wit name {args[1].capitalize()} doesn`t exist."
+            
 
         elif args[0].lower() == "email":
             rec.change_email(Email(args[2]))
@@ -624,7 +635,7 @@ COMMANDS = ["good bye", "close", "exit",
             "hello", "add", "phone", "show all", "save", "load", 
             "cls", "add phone", "show book", # "change phone", "del phone"
             "birthday", "help", "search", # "change birthday"
-            "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "remove", "change", "add email", "add address", "add birthday"]
+            "note add", "note del", "note change", "note find", "note show", "note sort", "sort", "del", "change", "add email", "add address", "add birthday"]
 
 OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "hello": func_greeting, 
@@ -644,7 +655,7 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "add email" : add_email,
               "add address" : add_address,
               "add birthday" : add_birthday,
-              "remove" : remove,
+              "del" : delete,
               "change" : change,
               "search": func_search,
               "note add": note_add,
