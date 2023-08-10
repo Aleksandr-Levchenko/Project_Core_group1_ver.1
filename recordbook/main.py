@@ -19,47 +19,47 @@ path_note = "n_book.json"
 book = AddressBook()
 note_book = NoteBook()
 
-# Головна функція роботи CLI(Command Line Interface - консольного скрипту) 
-def main():    
-    note_book.load_data(path_note)
-    cmd = ""
-    clear_screen("")
-    print("[bold white]CLI version 12.0[/bold white]")  
-    print("[white]Run >> [/white][bold red]help[/bold red] - list of the commands")
-    load_phoneDB(path_book)
+# # Головна функція роботи CLI(Command Line Interface - консольного скрипту) 
+# def main():    
+#     note_book.load_data(path_note)
+#     cmd = ""
+#     clear_screen("")
+#     print("[bold white]CLI version 12.0[/bold white]")  
+#     print("[white]Run >> [/white][bold red]help[/bold red] - list of the commands")
+#     load_phoneDB(path_book)
     
-    # головний цикл обробки команд користувача
-    while True:
-        # 1. Отримаємо команду від користувача
-        cmd = input(">> ")    
+#     # головний цикл обробки команд користувача
+#     while True:
+#         # 1. Отримаємо команду від користувача
+#         cmd = input(">> ")    
         
-        # 2. Виконуємо розбір командної строки
-        cmd, prm = parcer_commands(cmd)
+#         # 2. Виконуємо розбір командної строки
+#         cmd, prm = parcer_commands(cmd)
         
-        # 3. Отримуємо handler_functions тобто ДІЮ
-        if cmd: handler = get_handler(cmd)
-        else: 
-            print("Command was not recognized")
-            continue
+#         # 3. Отримуємо handler_functions тобто ДІЮ
+#         if cmd: handler = get_handler(cmd)
+#         else: 
+#             print("Command was not recognized")
+#             continue
         
-        if cmd in ["add", "phone", "add phone", 
-                     "show book", "birthday", "search", 
-                     "close", "exit", "good bye",
-                     "show all", "hello", "cls", 
-                     "help", "help sort", "help note", "help contact", 
-                     "del", "change", "add email", "add address", "add birthday", 
-                     "note add", "note change", "note del", 
-                     "note find", "note show", "note sort", "sort dir"]: result = handler(prm)
-        elif cmd in ["save", "load"]: result = handler(path_book)     
+#         if cmd in ["add", "phone", "add phone", 
+#                      "show book", "birthday", "search", 
+#                      "close", "exit", "good bye",
+#                      "show all", "hello", "cls", 
+#                      "help", "help sort", "help note", "help contact", 
+#                      "del", "change", "add email", "add address", "add birthday", 
+#                      "note add", "note change", "note del", 
+#                      "note find", "note show", "note sort", "sort dir"]: result = handler(prm)
+#         elif cmd in ["save", "load"]: result = handler(path_book)     
         
-        save_phoneDB(path_book)
-        note_book.save_data(path_note)
+#         save_phoneDB(path_book)
+#         note_book.save_data(path_note)
         
         
-        # 4. Завершення роботи програми
-        if result == "Good bye!":
-            print("Good bye!")
-            break
+#         # 4. Завершення роботи програми
+#         if result == "Good bye!":
+#             print("Good bye!")
+#             break
 #------------------------------------------------------------------
             
 # Декоратор для Обробки командної строки
@@ -533,28 +533,7 @@ def save_phoneDB(path):
     return book.save_database(path)
     
     
-#=========================================================
-# Функція виконує парсер команд та відповідних параметрів
-#=========================================================
-def parcer_commands(cmd_line):
-    tmp, cmd, prm  = [[], "", ""]
-    
-    if cmd_line:
-        tmp = cmd_line.split()
-        
-        # перевіремо ПОДВІЙНУ команду
-        if len(tmp) > 1 and f"{tmp[0]} {tmp[1]}".lower() in COMMANDS: #  add Mike 4589 94508
-            cmd = f"{tmp[0]} {tmp[1]}".lower()
-            prm = cmd_line.partition(cmd)[2].strip()
-            
-        # перевіремо ОДИНАРНУ команду
-        elif tmp[0].lower() in COMMANDS:
-            cmd = tmp[0].lower()
-            prm = cmd_line.partition(" ")[2]
-    return cmd, prm
 
-
-@input_error
 def func_help(arg):
     help_navigation = """[bold red]help all[/bold red] - виводить всю довідку на екран
 [bold red]help contact[/bold red] - довідка по командам адресної книги
@@ -613,7 +592,7 @@ def func_help(arg):
 
     return help_navigation
     
-@input_error
+
 def clear_screen(_):
     os_name = platform.system().lower()
     
@@ -632,53 +611,60 @@ def get_count_prm(prm: list):
     return count_prm
 
 
-COMMANDS = ["good bye", "close", "exit",
-            "hello", "add", "phone", "show all", "save", "load", 
-            "cls", "add phone", "show book", 
-            "birthday", "help", "search", 
-            "note add", "note del", "note change", "note find", 
-            "note show", "note sort", "sort dir", "delete", "change", 
-            "add email", "add address", "add birthday"]
+def no_command(*args):
+    return f"Unknown command. {help()}"
 
-OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
-              "hello": func_greeting, 
-              "add": func_add_rec,
-              "phone": func_phone, 
-              "show all": func_all_phone,
-              "save": save_phoneDB,
-              "load": load_phoneDB,
-              "cls": clear_screen,
-              "show book": func_book_pages,
-              "birthday": func_get_day_birthday,
-              "help": func_help,
-              "add phone": add_phone,
-              "add email" : add_email,
-              "add address" : add_address,
-              "add birthday" : add_birthday,
-              "del" : delete,
-              "change" : change,
-              "search": func_search,
-              "note add": note_add,
-              "note del": note_del,
-              "note change": note_change,
-              "note find": note_find,
-              "note show": note_show,
-              "note sort": note_sort, 
-              "sort dir": func_sort}
 
-# def complete(text, state):
-#     results = []
-#     if len(text) > 0:
-#         for cmd in COMMANDS:        
-#             if cmd.lower().startswith(text):
-#                 results.append(cmd)
-#     results.append(None)
-#     return results[state]
+COMMANDS = {
+    func_exit: ("close", "exit", "good bye"),
+    func_greeting: ("hello",),
+    func_add_rec: ("add",),
+    func_phone: ("phone",),
+    func_all_phone: ("show all",),
+    save_phoneDB: ("save",), 
+    load_phoneDB: ("load",),
+    clear_screen: ("cls"), 
+    func_book_pages: ("show book",),
+    func_get_day_birthday: ("birthday",),
+    func_help: ("help",), 
+    add_phone: ("add phone",),
+    add_email: ("add email"),
+    add_address: ("add address",),
+    add_birthday: ("add birthday",),
+    delete: ("del",),
+    change: ("change",),
+    func_search: ("search",),
+    note_add: ("note add",),
+    note_del: ("note del",),
+    note_change: ("note change",),
+    note_find: ("note find",),
+    note_show: ("note show",),
+    note_sort: ("note sort",),
+    func_sort: ("sort dir",)
+}
 
-# #==============================================
-# # set and bind autocomplete function 
-# readline.parse_and_bind("tab: complete")
-# readline.set_completer(complete)
+
+
+def parser(text: str):
+    for key, value in COMMANDS.items():
+        for val in value:
+            if text.startswith(val):
+                return key, text[len(val):].strip().split()
+        
+    return no_command, ""
+            
+            
+def main():
+    note_book.load_data(path_note)
+    while True:
+        user_input = input(">>>").lower()
+        command, data = parser(user_input)
+        result = command(*data)
+        print(result)
+            
+        if result == "Good bye!":
+            break
+
 
 if __name__ == "__main__":
     main()
