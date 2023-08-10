@@ -1,314 +1,336 @@
-# 
-from collections import UserDict
+
+from record_classes import AddressBook, Record, Name, Phone, Email, Birthday, Address, book
+from decorator import input_error
+from rich import box
+from rich.table import Table
+from rich.console import Console
 import re
-import pickle
-from datetime import datetime
-from datetime import timedelta
 
-# батьківський клас
-class Field():
-    def __init__(self, value) -> None:
-        self.__value = None
-        self.value = value
-    
-    @property
-    def value(self):
-        return self.__value
-    
-    @value.setter
-    def value(self, value):
-        self.__value = value
 
-    def __str__(self) -> str:
-        return self.value
-    
-    def __repr__(self) -> str:
-        return str(self.value)
-    
-# клас Ім'я
-class Name(Field):
-    @property
-    def value(self):
-        return self.__value
-    
-    @value.setter
-    def value(self, value):
-        self.__value = value
-
-  
-# клас Телефон
-class Phone(Field): 
-    @property
-    def value(self):
-        return self.__value 
-    
-    @value.setter
-    def value(self, value):
-        if value.lower() == "none": 
-            self.__value = "None"
-            return ""   # не видаляти
-        
-        if value:
-            correct_phone = ""
-            for i in value: 
-                if i in "+0123456789": correct_phone += i
-
-            if len(correct_phone) == 13: self.__value = correct_phone # "+380123456789"
-            elif len(correct_phone) == 12: self.__value = "+" + correct_phone # "380123456789"
-            elif len(correct_phone) == 10: self.__value = "+38" + correct_phone # "0123456789"
-            elif len(correct_phone) == 9: self.__value = "+380" + correct_phone # "123456789"
-            else: raise PhoneException("Incorrect phone format")   # невірний формат телефона
-
-    
-# клас День народження        
-class Birthday(Field):
-    @property
-    def value(self):
-        return self.__value
-    
-    @value.setter
-    def value(self, value:str):
-        #print(value)
-        if value.lower() == "none": 
-            self.__value = "None"
-        else:
-            pattern = r"^\d{2}(\.|\-|\/)\d{2}\1\d{4}$"  # дозволені дати формату DD.MM.YYYY 
-            if re.match(pattern, value):         # альтернатива для крапки: "-" "/"
-                self.__value = re.sub("[-/]", ".", value)  # комбінувати символи ЗАБОРОНЕНО DD.MM-YYYY 
-
-class Address(Field):
-    @property
-    def value(self):
-        return self.__value
-    
-    @value.setter
-    def value(self, value):
-        self.__value = value
-
-  
-class Email(Field):
-    @property
-    def value(self):
-        return self.__value
-    
-    @value.setter
-    def value(self, value: str):
-        if value.lower() == "none": 
-            self.__value = "None"
-        else:
-            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-            if not re.match(pattern, value):
-                raise EmailException("Invalid email address!")
-            else:
-                self.__value = value 
-    
-        
-#========================================================
-# Класс Record, который отвечает за логику 
-#  - добавления/удаления/редактирования
-# необязательных полей и хранения обязательного поля Name
 #=========================================================
-class Record():
-    def __init__(self, name:Name, phones: Phone=None, email: Email=None, birthday: Birthday=None, address: Address=None) -> None:
-        self.name = name            
-        self.phones = [] 
-        self.email = email
-        self.birthday = birthday
-        self.address = address
-        self.phones.append(phones)      
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти (в словаре например) новый контакт. 
+# Вместо ... пользователь вводит ИМЯ и НОМЕР телефона, обязательно через пробел.
+# example >> add Mike 02.10.1990 +380504995876
+#=========================================================
+@input_error
+def func_add_rec(prm):
+    args = prm.split(" ")
+    if not prm.partition(" ")[0].capitalize() in book.keys():
+        name = Name(args[0].capitalize())
+        phone = Phone(args[1] if len(args) >= 2 else "None")
+        email = Email(args[2] if len(args) >= 3 else "None")
+        birthday = Birthday(args[3] if len(args) >= 4 else "None")
+        address = Address(' '.join(args[4:]) if len(args) >= 5 else "None")
+        rec = Record(name, phone, email, birthday, address) 
+        return book.add_record(rec)
+    else: return "The person is already in database"
+
+
+#=========================================================
+# >> add phone    Done
+# функція розширює новим телефоном існуючий запис особи Mike   
+# >> add phone Mike +380509998877
+#=========================================================
+@input_error
+def add_phone(prm):
+    args = prm.split(" ")
+    count_prm = get_count_prm(prm)
+    if prm and (count_prm >= 2):
+        if args[0].capitalize() in book.keys():
+            rec = book[args[0].capitalize()]
+            if book[args[0].capitalize()].phones[0].value == "None": 
+                book[args[0].capitalize()].phones.clear()
+            return rec.add_phone(Phone(args[1]))
+        else: return f"The person [bold red]{args[0].capitalize()}[/bold red] isn't in a database"
+    else: return f"Expected 2 arguments, but {count_prm} was given.\nHer's an example >> add phone Mike +380509998877"
+
+
+#=========================================================
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти контакта Email. 
+# Вместо ... пользователь вводит ИМЯ и Email, обязательно через пробел.
+# example >> add email Mike mike.djonsen@gmail.com
+#=========================================================
+@input_error 
+def add_email(prm) -> str:
+    args = prm.split(" ")
+    rec = book[args[0].capitalize()]
+    email = Email(args[1])
+    rec.add_email(email)
+    return f'The contact "{args[0].capitalize()}" was updated with new email: {rec.email}'
+
+
+#=========================================================
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти контакта Address. 
+# Вместо ... пользователь вводит ИМЯ и address, адресу можна вводити як завгодно.
+# example >> add address Mike Stepan Banderi Avenue, 11A
+#=========================================================
+@input_error 
+def add_address(prm) -> str:
+    args = prm.split(" ")
+    rec = book[args[0].capitalize()]
+    rec.add_address(args[1:])
+    return f'The contact "{args[0].capitalize()}" was updated with new address: {rec.address}'
+
+
+#=========================================================
+# >> add ...  DONE
+# По этой команде бот сохраняет в памяти контакта birthday. 
+# Вместо ... пользователь вводит ИМЯ и birthday, обязательно через пробел.
+# example >> add birthday 31.12.2000
+#=========================================================
+@input_error
+def add_birthday(prm) -> str:
+    args = prm.split(" ")
+    rec = book[args[0].capitalize()]
+    rec.add_to_birthday(Birthday(args[1])) 
+    return f"Date of birth {args[0].capitalize()}, recorded"
+
+
+#=========================================================
+# >> show all         Done
+# По этой команде бот выводит все сохраненные контакты 
+# с номерами телефонов в консоль. 
+#=========================================================
+@input_error
+def func_all_phone(_)->str:
+    if len(book.data) == 0: 
+        return "The database is empty"
+    else: 
+        table = Table(box=box.DOUBLE)
+        table.add_column("Name", justify="center", style="cyan", no_wrap=True)
+        table.add_column("Phone number", justify="center", style="green", no_wrap=True)
+        table.add_column("Email", justify="center", style="red", no_wrap=True)
+        table.add_column("Birthday", justify="center", style="yellow", no_wrap=True)
+        table.add_column("Address", justify="center", style="red", no_wrap=True)
+
+        console = Console()
+        _ = [table.add_row(str(record.name.value), str(', '.join(map(lambda phone: phone.value, record.phones))), str(record.email.value), str(record.birthday.value), str(record.address.value)) for record in book.data.values()]
+        console.print(table)
+        return ""
         
-# ======================================================================================================
-# =========================================[ add ]======================================================
-# ======================================================================================================
 
-    def add_to_birthday(self, birthday:Birthday):
-        self.birthday = birthday
-        return ""
+#=========================================================
+# >> show book /N
+# Команда "show book" друкує книгу контактів по N записів
+# де N - це кількість записів на одній сторінці
+#=========================================================
+@input_error
+def func_book_pages(prm):
+    # Итерируемся по адресной книге и выводим представление для каждой записи
+    n = int(re.sub("\D", "", prm))
+    n_page = 0
+    for batch in book._record_generator(N=n):
+        n_page += 1
+        print(f"{'='*14} Page # [bold red]{n_page}[/bold red] {'='*16}")
+        for record in batch:
+            print("\n".join([f"{record.name.value}|{record.birthday.value}|{', '.join(map(lambda phone: phone.value, record.phones))}"]))
+        print("="*40)    
+        print("Press [bold red]Enter [/bold red]", end="")
+        input("to continue next page...")
+    return f"End of the book" 
 
-    def add_email(self, email:Email) -> None: 
-        self.email.value = email.value
-        return ""
 
-    def add_address(self, address:Address) -> None: 
-        self.address.value = ' '.join(address)
-        return ""
+
+
+
+#=========================================================
+# >> hello
+# Отвечает в консоль "How can I help you?"
+#=========================================================
+@input_error
+def func_greeting(_):
+    return "How can I help you?"
+
+
+#=========================================================
+# >> phone ... Done
+# По этой команде бот выводит в консоль номер телефона для указанного контакта.
+# Вместо ... пользователь вводит Имя контакта, чей номер нужно показать.
+# >> phone Ben
+#=========================================================
+@input_error
+def func_phone(prm):
+    prm = prm.split(" ")
+    if prm[0] == "": return f'Missed "Name" of the person'
+    name = prm[0].lower().capitalize()
+    if name in book.keys():   
+        if prm: 
+            res = ", ".join([phone.value for phone in book[name].phones]) 
+            return f"Person {name} doesn't have phone" if res == "None" else res
+        else: return f"Expected 1 argument, but 0 was given.\nHer's an example >> phone Name"
+    else:
+        return f"The {name} isn't in the database"  
+
+
+#=========================================================
+# >> birthday    Done
+# функція повертає кількість днів до Дня Народження особи    
+# Example >> birthday Mike
+# Example >> birthday /365
+#=========================================================
+@input_error
+def func_get_day_birthday(prm):
+    # порахуємо кількість параметрів
+    count_prm = get_count_prm(prm)
+    prm = prm.split(" ")
+    if prm[0] == "": return f'Missed [bold red]Name[/bold red] of the person'
+        
+    if prm and (count_prm >= 1):
+        if "/" in prm[0]:   # Example >> birthday /365
+            count_day = int(re.sub("\/", "",prm[0]))
+            if not count_day > 0: return f"Enter the number of days greater than zero"
+            return book.get_list_birthday(count_day)
+            
+        else: # Example >> birthday Mike
+            name = prm[0].lower().capitalize()
+            if name in book.keys():
+                if book[name].birthday.value == "None": return f"No [bold red]Birthday[/bold red] for {name}"
+                return book[name].days_to_birthday() 
+            else: return f"The [bold red]{name}[/bold red] isn't in a database"
+    else: return f"Expected 1 arguments, but {count_prm} was given.\nHer's an example >> birthday Mike"
 
 # ======================================================================================================
 # =========================================[ remove ]===================================================
 # ======================================================================================================
 
-    def remove_phone(self, phones:Phone, bool=True) -> str:
-        if len(self.phones) == 0: return "This contact has no phone numbers saved"
+@input_error
+def delete(prm:str):
+    args = prm.split(" ")
+    rec = book[args[1].capitalize()]
+    if args[0].lower() == "name":
+        if book[args[1].capitalize()].name.value == args[1].capitalize():
+            del book[args[1].capitalize()]
+            return f"{args[1].capitalize()} is deleted from the contact book"
         
-        for n in self.phones:
-            if n.value == phones.value:
-                if bool:
-                    if len(self.phones) == 1:
-                        self.add_phone(Phone("None"))
-                self.phones.remove(n)
-                return phones
+    elif args[0].lower() == "phone":
+        num = rec.remove_phone(Phone(args[2]))
+        if num == "This contact has no phone numbers saved": 
+            return num
+        return f"Phone number {args[1].capitalize()} : {num} - Deleted"
 
-    def remove_birthday(self) -> None:
-        self.birthday.value = "None"
+    elif args[0].lower() == "email":
+        rec.remove_email()
+        return f"{args[1].capitalize()}'s email has been removed from the contact list"
 
-    def remove_email(self) -> None: 
-        self.email.value = "None"
+    elif args[0].lower() == "birthday":
+        rec.remove_birthday()
+        return f"{args[1].capitalize()}'s birthday has been removed from the contact list"
 
-    def remove_address(self) -> None: 
-        self.address.value = "None"
-
+    elif args[0].lower() == "address":
+        rec.remove_address()
+        return f'address removed from {args[1].capitalize()}\'s profile'
+    else:
+        return "якийсь Error remove"
+    
 # ======================================================================================================
 # =========================================[ change ]===================================================
 # ======================================================================================================
 
-    def change_name(self, name:Name, new_name:Name) -> None: 
-        if self.name.value == name.value: self.name = new_name
+@input_error
+def change(prm:str):
+    args = prm.split(" ")
+    if args[1].capitalize() in book.keys():
+        rec = book[args[1].capitalize()]
+        if args[0].lower() == "name":
+            if not args[2].capitalize() is book.data.keys():
+                rec = book[args[1].capitalize()]
+                rec.change_name(Name(args[1].capitalize()), Name(args[2].capitalize()))
+                book.data.pop(args[1].capitalize())
+                book[args[2].capitalize()] = rec
+                return f"Contact name {args[1].capitalize()}`s changed to {args[2].capitalize()}'s"
+            else: 
+                return f"Contact with the name {args[2].capitalize()}'s already exists"
 
-    def change_phone(self, old_phone:Phone, new_phone:Phone) -> str:
-        for phones in self.phones:
-            if str(old_phone) == str(phones):
-                self.remove_phone(old_phone, False)
-                self.add_phone(new_phone)
-                return f"Phone {old_phone} change to {new_phone} for {self.name} contact "
-        return f"Phone {old_phone} for contact {self.name} doesn`t exist"
-
-    def change_birthday(self, new_birthday:Birthday) -> None:
-        self.birthday = new_birthday
-
-    def change_email(self, new_email:Email) -> None: 
-        self.email = new_email
-
-    def change_address(self, new_address:Address) -> None: 
-        self.address.value = ' '.join(new_address.value)
-
-    def __str__(self):
-        return "{}{}{}{}{}".format(
-                                   f"Name: {self.name}\n", 
-                                   f'Phone: {", ".join([str(p) for p in self.phones]) if self.phones else "No phone"}\n', 
-                                   'Email: ' + str(self.email.value) + "\n" if self.email is not "None" else "Email: No email\n",
-                                   'Address: ' + str(self.address) + "\n" if self.address is not "None" else 'Address: No address\n',
-                                   'Birthday: ' + str(self.birthday.value) + "\n" if self.birthday is not "None" else "Birthday: No birthday date\n")                       
-
-    def __repr__(self):
-        return "{}{}{}{}{}".format(
-                                   f"Name: {self.name}\n", 
-                                   f'Phone: {", ".join([str(p) for p in self.phones]) if self.phones else "No phone"}\n', 
-                                   'Email: ' + str(self.email.value) + "\n" if self.email is not "None" else "Email: No email\n",
-                                   'Address: ' + str(self.address) + "\n" if self.address is not "None" else 'Address: No address\n',
-                                   'Birthday: ' + str(self.birthday.value) + "\n" if self.birthday is not "None" else "Birthday: No birthday date\n")                       
-
-
-    # Done - розширюємо існуючий список телефонів особи - Done
-    # НОВИМ телефоном або декількома телефонами для особи - Done
-    def add_phone(self, new_phone: Phone) -> str:
-        self.phones.append(new_phone)
-        return f"The phones was/were added - [bold green]success[/bold green]"
-    
-    
-    # повертає кількість днів до наступного дня народження
-    def days_to_birthday(self):
-        if self.birthday.value:
-            now_date = datetime.now()
-            now_year = now_date.year
+        elif args[0].lower() == "phone":
+            if len(args) >= 4 and rec: 
+                rec.change_phone(Phone(args[2]), Phone(args[3]))
+                return ""
+            else:                                                 
+                raise PhoneException(f"Check parameters for command >> change pnone")
+                #return f"Contact wit name {args[1].capitalize()} doesn`t exist."
             
-             # Определяем формат строки для Даты
-            date_format = "%d.%m.%Y %H:%M:%S"
-            # Строка с Датой народження
-            date_string = f"{self.birthday.value} 00:00:00"  
-            dt = datetime.strptime(date_string, date_format)
-            
-            birthday = datetime(day=dt.day, month=dt.month, year=now_year)
-            
-            if now_date > birthday:
-                birthday = birthday.replace(year=now_date.year + 1)
-                dif = (birthday - now_date).days
-                return f"до {birthday.strftime('%d.%m.%Y')} залишилося = {dif}"
-            else:
-                dif = (birthday - now_date).days
-                return f"до {birthday.strftime('%d.%m.%Y')} залишилося = {dif}"
-        else: return f"We have no information about {self.name.value}'s birthday."
-    
-        
-    # перевіряє наявність 1(одного)телефону у списку
-    def check_dublicate_phone(self, search_phone: str) ->bool:  
-        result = list(map(lambda phone: any(phone.value == search_phone), self.data[self.name.value].phones))
-        return True if result else False
-    
 
-class AddressBook(UserDict):
+        elif args[0].lower() == "email":
+            rec.change_email(Email(args[2]))
+            return f"Email is profile {args[1].capitalize()}'s has been changed"
 
-    def get_list_birthday(self, count_day: int):
-            end_date = datetime.now() + timedelta(days=int(count_day))
-            lst = [f"\nList of birthday before: {end_date.strftime('%d.%m.%Y')}"]
-            for name, person in self.items():
-                if not (person.birthday.value == "None"): 
-                    person_date = datetime.strptime(person.birthday.value, "%d.%m.%Y").date()
-                    person_month = person_date.month 
-                    person_day = person_date.day 
-                    dt = datetime(datetime.now().year, person_month, person_day) 
-                    if end_date >= dt > datetime.now(): 
-                        lst.append(f"{name}|{person.birthday.value}|{', '.join(map(lambda phone: phone.value, person.phones))} - {person.days_to_birthday()}")
-            return "\n".join(lst)
-       
-    def add_record(self, record):
-        self.data[record.name.value] = record
-        return "1 record was successfully added - [bold green]success[/bold green]"
+        elif args[0].lower() == "birthday":
+            rec.change_birthday(Birthday(args[2]))
+            return f"Birthday profile {args[1].capitalize()}'s has been changed"
+
+        elif args[0].lower() == "address":
+            rec.change_address(Address(args[2:]))
+            return f'The contact "{args[1].capitalize()}" was updated with new address: {rec.address}'
+        else:
+            return "якийсь Error change"
+    else: raise BirthdayException(f"Name {args[1].capitalize()} isn't in datebase")
+
+#=========================================================
+# >> search    Done
+# функція виконує пошук інформації у довідковій книзі
+#              example >> search Mike
+#                      >> search 38073
+#                      >> search none
+#=========================================================
+@input_error
+def func_search(prm):
+    count_prm = get_count_prm(prm)
     
-    # завантаження записів книги із файлу
-    def load_database(self, path):
-        with open(path, "rb") as fr_bin:
-            self.data = pickle.load(fr_bin)  # копирование Словника  
-        return f"The database has been loaded = {len(self.data)} records"
+    prm = prm.split(" ")
+    if prm[0] == "": return f"[bold yellow]Enter search information[/bold yellow]"
+    lst_result = []
+    rec_str = ""
+    if prm and (count_prm >= 1):
+        for rec in book.values():
+            rec_str = str(rec)
+            if prm[0].lower() in rec_str.lower():
+                lst_result.append(rec_str)
+                
+        s = "\n".join([rec for rec in lst_result])
+        if lst_result: 
+            return f"[bold green]Search results:[/bold green]\n{s}"
+        else: 
+            return f"No matches found for {prm[0]}"
+    else: 
+        return f"Expected 1 arguments, but {count_prm} was given.\nHer's an example >> search Mike"
     
-    #-----------------------------------------
-    # збереження записів книги у файл  
-    # формат збереження даних:
-    #
-    # Lisa|15.08.1984|+380739990022, +380677711122
-    # Alex|None|+380954448899, +380506667788   
-    #-------------------------------------------
-    def save_database(self, path):
-        with open(path, "wb") as f_out:
-            pickle.dump(self.data, f_out)
-        return ""
-        
-            
-    # генератор посторінкового друку
-    def _record_generator(self, N=10):
-        records = list(self.data.values())
-        total_records = len(records)
-        current_index = 0
-        
-        while current_index < total_records:
-            batch = records[current_index: current_index + N]
-            current_index += N
-            yield batch
+    
+# =========================================================
+# >> sort    Done
+# функція викликає модул cleanfolder виконує сортування файлів у вказаній папці
+#              example >> sort Testfolder
+#                      >> sort C://Testfolder/testfolder
+#                      >> sort .Testfolder/testfolder
+# =========================================================
+@input_error
+def func_sort(prm):
+    if prm[0] == "":
+        return f"[bold yellow]Enter path[/bold yellow]"
+    return sort_main(prm)
+    
+    
+#=========================================================
+# Функція читає базу даних з файлу - ОК
+#========================================================= 
+@input_error
+def load_phoneDB(path):
+    return book.load_database(path)
 
 
-class PhoneException(Exception):
-    def __init__(self, message):
-        self.__message = None
-        self.message = message
-        
-    
-    def __str__(self):
-        return f"Attention: {self.message}"
+#=========================================================
+# Функція виконує збереження бази даних у файл *.csv - OK
+#========================================================= 
+@input_error
+def save_phoneDB(path):
+    return book.save_database(path)
 
 
-class BirthdayException(Exception):
-    def __init__(self, message):
-        self.__message = None
-        self.message = message
-    
-    def __str__(self):
-        return f"Attention: {self.message}"
-
-
-class EmailException(Exception):
-    def __init__(self, message):
-        self.__message = None
-        self.message = message
-    
-    def __str__(self):
-        return f"Attention: {self.message}"
-    
+# Рахує та повертає кількість параметрів
+def get_count_prm(*args: list):
+    if len(args) > 0: 
+        count_prm = args.count(" ", 0, -1) + 1
+    else: count_prm = 0
+    return count_prm

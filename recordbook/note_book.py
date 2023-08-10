@@ -1,133 +1,122 @@
-from collections import UserDict
+from note_classes import NoteRecord, Note, Tag, n_book
+from decorator import input_error
 from datetime import datetime
-import json
 
-class Tag:
-    def __init__(self, value=None):        
-        self.__value = None
-        self.value = value
-        
-    def __str__(self):
-        return str(self.value)
+
+@input_error
+def func_exit(*args):
+    #save_noteDB(path_note)
+    return "Good bye!"   
+
+
+#=========================================================
+# Блок функцій для роботи з нотатками
+#=========================================================
+# >> note add <текст нотатки будь-якої довжини> <teg-ключове слово> 
+# example >> note add My first note in this bot. Note
+#=========================================================
+@input_error
+def note_add(*args):    
+    key = str(datetime.now().replace(microsecond=0).timestamp())
+    note = Note(" ".join(args[:]))
+    arg_tag = input("Tag input >>> ")
+    tag = Tag(arg_tag) 
+    record = NoteRecord(key, note if note else "", tag if note else "")
+    return n_book.add_record(record)
+
+
+#=========================================================
+# >> note del <key-ідентифікатор запису>
+# example >> note del 1691245959.0
+#=========================================================
+@input_error
+def note_del(*args):
+    key = args[0]
+    rec : NoteRecord = n_book.get(key)
+    try:
+        return n_book.del_record(rec)
+    except KeyError:
+        return f"Record {key} does not exist."
+            
+
+#=========================================================
+# >> note change <key-record> <New notes> <tag>
+# example >> note change 1691245959.0 My new notes. Tag 
+#=========================================================
+@input_error
+def note_change(*args):
+    key = args[0]
+    note = Note(" ".join(args[1:]))
+    tag = Tag(input("Enter tag >>> "))
+    rec : NoteRecord = n_book.get(key)
+    if rec:
+        return rec.change_note(rec.note.value, note if note else rec.note.value, tag if tag else rec.tag.value)
+    else:
+        return f"Record does not exist"
     
-    def __repr__(self):
-        return str(self.value)
-    
-    @property
-    def value(self):
-        return self.__value
 
-    @value.setter
-    def value(self, value):
-        if value:
-            self.__value = value
-
-class Note(Tag):
-    pass
-
-class Key(Tag):
-    pass
-
-class NoteRecord():    
-    def __init__(self, key: str, note: Note=None, tag: Tag=None):        
-        self.key = key
-        self.note = note
-        self.tag = tag
-
-    def __str__(self):
-        return f"{str(self.key)} {str(self.note if self.note else '')} {str(self.tag if self.tag else '')}"
-    
-    def __repr__(self):
-        return f"{str(self.key)} {str(self.note if self.note else '')} {str(self.tag if self.tag else '')}"
-                
-    def add_note(self, note: Note):
-        self.note = note
-        return f"Note {note} added."
-
-    def del_note(self, note):
-        if note == self.note:
-            self.note = None
-        return f"Record Note {note} deleted"
-
-    def change_note(self, old_note: Note, new_note: Note, tag: Tag):
-        self.del_note(old_note)
-        self.add_note(new_note)
-        self.tag = tag        
-        return f"\nChanged note: {old_note}\nNew note: {new_note}\nNew Tag: {self.tag}\n"
-
-class NoteBook(UserDict):
-    def add_record(self, record: NoteRecord):
-        self.data[record.key] = record
-        return f"\nAdded new record\nwith key: {record.key}\nNote: {record.note}\nTag: {record.tag}\n"
-    
-    def del_record(self, record: NoteRecord):
-        result = self.data.pop(record.key)
-        return f"\nDeleted record \nwith key: {result.key}\nNote: {result.note}\nTag: {result.tag}\n"
-        
-    def iterator(self, group_size=15):
-        records = list(self.data.values())
-        self.current_index = 0
-
-        while self.current_index < len(records):
-            group_items = records[self.current_index:self.current_index + group_size]
-            group = [rec for rec in group_items]
-            self.current_index += group_size
-            yield group
-
-    def save_data(self, filename):
-        with open(filename, 'w') as f:
-
-            json.dump({str(record.key): (str(record.note  if record.note else ""), str(record.tag if record.tag else "")) for key, record in self.items()}, f, indent=4)
-
-        return f"The note_book is saved."
-
-    def load_data(self, filename):
-        try:
-            with open(filename, 'r') as f:
-                data_dict = json.load(f)
-                for key, value in data_dict.items():                    
-                    note, tag = value
-                    note = Note(note)
-                    tag = Tag(tag)
-                    record = NoteRecord(key, note, tag)
-                    self.data[record.key] = record
-
-            if isinstance(self.data, dict):
-                print(f"The Notebook is loaded.")
-                if not len(self.data): 
-                    return f"Notebook is empty"
-            else:
-                print("The file does not contain a valid Notebook.")
-        except FileNotFoundError:
-            print(f"The file {filename} does not exist")
+#=========================================================
+# >> note find <fragment>
+# Фрагмент має бути однією фразою без пробілів
+# example >> note find word
+#=========================================================
+@input_error
+def note_find(*args):
+    return n_book.find_note(args[0])
 
 
-    def find_note(self, fragment:str):
-        count = 0
-        result = ""
-        for rec in self.values():
-            line = str(rec) + "\n"
-            if fragment in line.lower():
-                result += line
-                count += 1
-        if result:            
-            result = f"\nSearch result {str(count)} records:\nNotes:\n{result}Search string: {fragment}"
-        else:
-            result = f"No records was found for the fragment '{fragment}' \n"
-        return result
-    
-if __name__ == "__main__":
+#=========================================================
+# >> note show <int: необов'язковий аргумент кількості рядків>
+# Передається необов'язковий аргумент кількості рядків 
+# example >> note show /15
+#=========================================================
+@input_error
+def note_show(*args):
+    if len(n_book.data) == 0: return f"The database is empty"
+    if args[0].startswith("/") and args[0][1:].isdigit():
+        args = int(args[0][1:])
+    else:
+        args = 5    
+    for page, rec in enumerate(n_book.iterator(args), 1):
+        print(f"Page {page}\n")
+        for item in rec:
+            print(f"{item}")
+        input("\nPress enter for next page")
+    return ""
 
-    nb = NoteBook()
-    file_name = "n_book.json"
-    print(nb.load_data(file_name))
-    print(nb) 
 
-    key=datetime.now().replace(microsecond=0).timestamp()
-    note = Note('Create tag sorting')
-    rec = NoteRecord(key, note, Tag('Project'))
-    nb.add_record(rec)
+#=========================================================
+# >> note sort
+# Сортування нотаток по тегу
+# example >> note sort
+#=========================================================
+@input_error
+def note_sort(args):    
+    result = []
+    for rec in n_book.values():
+        line = f"{rec.tag}  {rec.note}  {rec.key}"
+        result.append(line)
+    result.sort()
+    count = 0
+    for item in result:
+        print(item)
+        count += 1
+        if count == 5:
+            input("\nFor next page press enter\n")
+            count = 0
+    return ""
 
-    print(nb.find_note('note'))
-    print(nb.save_data(file_name))
-    print(nb)
+#=========================================================
+# Функція читає базу даних з файлу - ОК
+#========================================================= 
+@input_error
+def load_noteDB(path):
+    return n_book.load_data(path)
+
+
+#=========================================================
+# Функція читає базу даних з файлу - ОК
+#========================================================= 
+@input_error
+def save_noteDB(path):
+    return n_book.save_data(path)
