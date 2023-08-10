@@ -1,9 +1,9 @@
 from pathlib import Path
 import os, sys
 import platform 
-from recordbook.record_book import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
-from recordbook.clean import sort_main
-from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
+from record_book import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
+from clean import sort_main
+from note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
 import re
 # import readline
