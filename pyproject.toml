@@ -18,6 +18,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+dependencies = [
+    "rich >= 13.0.0",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/Aleksandr-Levchenko/Project_Core_group1_ver.1"
 "Bug Tracker" = "https://github.com/Aleksandr-Levchenko/Project_Core_group1_ver.1"
@@ -28,10 +32,6 @@ requires = [
     ]
 build-backend = "setuptools.build_meta"
 
-[project]
-dependencies = [
-    "rich >= 13.0.0",
-]
 
 [project.scripts]
 recordbook = "recordbook.main:main"
