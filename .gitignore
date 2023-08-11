@@ -7,5 +7,6 @@ build/
 *.bin
 *.json
 *.txt
+*.venv
 *__pycache__/
 

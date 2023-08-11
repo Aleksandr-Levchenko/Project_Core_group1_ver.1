@@ -20,11 +20,11 @@ def input_error(func):
         except EmailException as e:
             result = e
         except FileNotFoundError:    # Файл бази даних Відсутній
-            result = "The database isn't found"
+            result = "The database is not found"
         except ValueError:
             result = "Incorect data or unsupported format while writing to the file"
         except KeyError:
-            result = "Record isn't in the database"
+            result = "Record is not in the database"
         except TypeError:
             result = "Incorect data"
         except IndexError:           
