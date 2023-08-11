@@ -2,7 +2,6 @@ from record_classes import PhoneException, BirthdayException, EmailException
 
 
 
-
 # Декоратор для Обробки командної строки
 def input_error(func):
     def inner(*args):
@@ -11,21 +10,25 @@ def input_error(func):
             # if not result == "Good bye!": 
             #     return result
             # else: 
-            return result   
+            
         
         # Обробка виключних ситуацій
         except BirthdayException as e:
-            print(e)
+            result = e
         except PhoneException as e:
-            print(e)
+            result = e
         except EmailException as e:
-            print(e)
+            result = e
         except FileNotFoundError:    # Файл бази даних Відсутній
-            print("The database isn't found")
+            result = "The database isn't found"
         except ValueError:
-            print("Incorect data or unsupported format while writing to the file")
+            result = "Incorect data or unsupported format while writing to the file"
         except KeyError:
-            print("Record isn't in the database")                 
+            result = "Record isn't in the database"
         except TypeError:
-            print("Incorect data")
+            result = "Incorect data"
+        except IndexError:           
+            if "note_show" in str(func):
+                result = "Enter the number of lines per page"
+        return result   
     return inner

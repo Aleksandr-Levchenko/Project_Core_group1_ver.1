@@ -1,7 +1,9 @@
 from note_classes import NoteRecord, Note, Tag, n_book
 from decorator import input_error
 from datetime import datetime
-
+from rich import box
+from rich.table import Table
+from rich.console import Console
 
 @input_error
 def func_exit(*args):
@@ -79,11 +81,19 @@ def note_show(*args):
         args = 5    
     for page, rec in enumerate(n_book.iterator(args), 1):
         print(f"Page {page}\n")
-        for item in rec:
-            print(f"{item}")
-        input("\nPress enter for next page")
-    return ""
+   
+    table = Table(box=box.DOUBLE)
+    table.add_column("Num", justify="center", style="green", no_wrap=True)
+    table.add_column("Key", justify="center", style="green", no_wrap=True)
+    table.add_column("Note", justify="center", style="yellow", no_wrap=True)
+    table.add_column("Tag", justify="center", style="red", no_wrap=True)
+    table.add_column("Date", justify="center", style="blue", no_wrap=True)
 
+    console = Console()
+    _ = [table.add_row(str(i), str(item.key), str(item.note), str(item.tag), str(datetime.fromtimestamp(float(item.key)))) for i, item in enumerate(rec, 1)]
+    console.print(table)
+    return ""
+  
 
 #=========================================================
 # >> note sort
