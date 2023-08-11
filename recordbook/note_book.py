@@ -108,12 +108,16 @@ def note_sort(args):
         result.append(line)
     result.sort()
     count = 0
-    for item in result:
-        print(item)
-        count += 1
-        if count == 5:
-            input("\nFor next page press enter\n")
-            count = 0
+    
+    table = Table(box=box.DOUBLE)
+    table.add_column("Num", justify="center", style="green", no_wrap=True)
+    table.add_column("Tag / Note", justify="left", style="green", no_wrap=True)
+    table.add_column("Key", justify="center", style="green", no_wrap=True)
+    table.add_column("Date", justify="center", style="blue", no_wrap=True)
+
+    console = Console()
+    _ = [table.add_row(str(i), str(item[:item.rfind(" ")]), str(item[item.rfind(" "):]), str(datetime.fromtimestamp(float(item[item.rfind(" "):])))) for i, item in enumerate(result, 1)]
+    console.print(table)    
     return ""
 
 #=========================================================
