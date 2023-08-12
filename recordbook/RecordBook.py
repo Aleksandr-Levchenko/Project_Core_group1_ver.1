@@ -69,7 +69,6 @@ class Birthday(Field):
     
     @value.setter
     def value(self, value:str):
-        #print(value)
         if value.lower() == "none": 
             self.__value = "None"
         else:
@@ -103,6 +102,16 @@ class Email(Field):
             else:
                 self.__value = value 
     
+        # if value:
+        #     if value.lower() == "none": 
+        #         self.__value = "None"
+        #     verified = str(*re.findall(r"[a-zA-Z]{1}[a-zA-Z0-9._]{1,}@[a-zA-Z]+\.[a-zA-Z]{2,}", value))
+        #     if verified: 
+        #         self.__value = verified
+        #     else: 
+        #         raise EmailException("Invalid email address!")
+        # else: self.__value = "None"
+    
         
 #========================================================
 # Класс Record, который отвечает за логику 
@@ -123,7 +132,7 @@ class Record():
 # ======================================================================================================
 
     def add_to_birthday(self, birthday:Birthday):
-        self.birthday = birthday
+        self.birthday.value = birthday.value
         return ""
 
     def add_email(self, email:Email) -> None: 
@@ -131,7 +140,7 @@ class Record():
         return ""
 
     def add_address(self, address:Address) -> None: 
-        self.address.value = ' '.join(address)
+        self.address.value = ' '.join(address.value)
         return ""
 
 # ======================================================================================================
@@ -198,34 +207,11 @@ class Record():
                                    'Address: ' + str(self.address) + "\n" if self.address is not "None" else 'Address: No address\n',
                                    'Birthday: ' + str(self.birthday.value) + "\n" if self.birthday is not "None" else "Birthday: No birthday date\n")                       
 
-
-
-    # def __str__(self) -> str:
-    #     return f"{self.name.value}|{self.birthday.value}|{', '.join(map(lambda phone: phone.value, self.phones))}" 
-    
     # Done - розширюємо існуючий список телефонів особи - Done
     # НОВИМ телефоном або декількома телефонами для особи - Done
     def add_phone(self, new_phone: Phone) -> str:
         self.phones.append(new_phone)
         return f"The phones was/were added - [bold green]success[/bold green]"
-    
-    # # Done - видаляємо телефони із списку телефонів особи - Done!
-    # def del_phone(self, del_phone: Phone) -> str:
-    #     error = True
-    #     for phone in self.phones:
-    #             if phone.value == del_phone.value: 
-    #                 self.phones.remove(phone) 
-    #                 self.phones.append(Phone("None")) if self.phones == [] else self.phones 
-    #                 error = False  #видалення пройшло з успіхом
-    #                 break
-    #     if error: return f"The error has occurred. You entered an incorrect phone number."
-    #     else: return f"The phone {phone.value} was deleted - [bold green]success[/bold green]"
-    
-    # # Done = редагування запису(телефону) у книзі особи - Done
-    # def edit_phone(self, old_phone: Phone, new_phone: Phone) -> str:
-    #     index = next((i for i, obj in enumerate(self.phones) if obj.value == old_phone.value), -1)
-    #     self.phones[index]= new_phone
-    #     return f"The person {self.name.value} has a new phone {new_phone.value} - [bold green]success[/bold green]"
     
     # повертає кількість днів до наступного дня народження
     def days_to_birthday(self):
@@ -249,11 +235,6 @@ class Record():
                 dif = (birthday - now_date).days
                 return f"до {birthday.strftime('%d.%m.%Y')} залишилося = {dif}"
         else: return f"We have no information about {self.name.value}'s birthday."
-    
-    # # змінює день народження для особи
-    # def change_birthday(self, birthday: Birthday):
-    #     self.birthday = birthday
-    #     return f"Birthday for {self.name.value} is changed - [bold green]success[/bold green]"
     
     # перевіряє наявність 1(одного)телефону у списку
     def check_dublicate_phone(self, search_phone: str) ->bool:  
@@ -298,8 +279,7 @@ class AddressBook(UserDict):
         with open(path, "wb") as f_out:
             pickle.dump(self.data, f_out)
         return ""
-        #return f"The database is saved = {len(self.data)} records"
-            
+   
     # генератор посторінкового друку
     def _record_generator(self, N=10):
         records = list(self.data.values())
@@ -316,8 +296,7 @@ class PhoneException(Exception):
     def __init__(self, message):
         self.__message = None
         self.message = message
-        #super().__init__(self.message)
-    
+  
     def __str__(self):
         return f"Attention: {self.message}"
 
