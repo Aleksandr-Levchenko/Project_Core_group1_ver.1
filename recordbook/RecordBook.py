@@ -10,10 +10,6 @@ class AbstractUI(ABC):
         self.book = book
 
     @abstractmethod
-    def display_menu(self):
-        pass
-
-    @abstractmethod
     def get_user_input(self):
         pass
 
@@ -36,11 +32,7 @@ class AbstractUI(ABC):
 
 class ConsoleUI(AbstractUI):
     def display_menu(self):
-        print("1. Show all contacts")
-        print("2. Add contact")
-        print("3. Remove contact")
-        print("4. Edit contact")
-        print("5. Exit")
+        pass
 
     def get_user_input(self):
         return input("Enter your choice: ")

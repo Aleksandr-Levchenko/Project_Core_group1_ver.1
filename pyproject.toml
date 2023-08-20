@@ -1,6 +1,6 @@
 [project]
 name = "recordbook"
-version = "0.5.1"
+version = "0.5.2"
 authors = [
     { name="Olexandr Levchenko", email="levchenko.aah@gmail.com"},
     { name="Maxim Krivitsky", email="max.krivitskyh@gmail.com"},

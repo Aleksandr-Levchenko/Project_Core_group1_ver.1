@@ -1,9 +1,11 @@
 from pathlib import Path
-import os, sys
+import os
+import sys
 import platform  # для clearscrean()
-from recordbook.RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException, AbstractUI, ConsoleUI
-from recordbook.clean import sort_main
-from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
+from RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
+from RecordBook import AbstractUI, ConsoleUI
+from clean import sort_main
+from note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
 import re
 
@@ -11,6 +13,15 @@ from rich import print
 from rich import box
 from rich.table import Table
 from rich.console import Console
+
+COMMANDS_WITH_PARAMETERS = ["add", "phone", "add phone",
+                            "show book", "birthday", "search",
+                            "close", "exit", "good bye",
+                            "show all", "remove", "change", "add email", "add address", "add birthday",
+                            "note add", "note change", "note del", "note sort",
+                            "note find", "note show", "sort"]
+COMMANDS_WITHOUT_PARAMETERS = [
+    "hello", "cls", "help", "help sort", "help note", "help contact"]
 
 # Получаем абсолютный путь к запущенной программе
 #absolute_path = os.path.abspath(sys.argv[0])
@@ -21,46 +32,54 @@ path_note = "n_book.json"
 
 book = AddressBook()
 note_book = NoteBook()
-ui = AbstractUI(book)
+ui = ConsoleUI(book)
 
 # Головна функція роботи CLI(Command Line Interface - консольного скрипту) 
-def main(): 
-    
+
+
+def main():
+    note_book = NoteBook()
+    ui = ConsoleUI(book)
+
     note_book.load_data(path_note)
     cmd = ""
     clear_screen("")
-    print("[bold white]CLI version 12.0[/bold white]")  
+    print("[bold white]CLI version 12.0[/bold white]")
     print("[white]Run >> [/white][bold red]help[/bold red] - list of the commands")
     load_phoneDB(path_book)
     ui.run()
-    # головний цикл обробки команд користувача
+
     while True:
-        # 1. Отримаємо команду від користувача
-        cmd = input(">> ")    
-        
-        # 2. Виконуємо розбір командної строки
-        cmd, prm = parcer_commands(cmd)
-        
-        # 3. Отримуємо handler_functions тобто ДІЮ
-        if cmd: handler = get_handler(cmd)
-        else: 
-            print("Command was not recognized")
+        cmd = input(">> ")
+
+        if not cmd:
             continue
-        
-        if cmd in ["add", "phone", "add phone", # "del phone", "change birthday", "change phone", 
-                     "show book", "birthday", "search", 
-                     "close", "exit", "good bye",
-                     "show all", "hello", "cls", "help", "help sort", "help note", "help contact", "remove", "change", "add email", "add address", "add birthday", 
-                     "note add", "note change", "note del", 
-                     "note find", "note show", "note sort", "sort"]: result = handler(prm)
-        elif cmd in ["save", "load"]: result = handler(path_book)     
-        
-        save_phoneDB(path_book)
-        
-        # 4. Завершення роботи програми
+
+        cmd, prm = parcer_commands(cmd)
+
+        if cmd in COMMANDS_WITHOUT_PARAMETERS:
+            handler = get_handler(cmd)
+            result = handler()
+
+        elif cmd in COMMANDS_WITH_PARAMETERS:
+            handler = get_handler(cmd)
+            if prm:
+                result = handler(prm)
+            else:
+                print("Parameter is missing for the command")
+
+        elif cmd in ["save", "load"]:
+            handler = get_handler(cmd)
+            result = handler(path_book)
+            save_phoneDB(path_book)
+
+        else:
+            print("Command was not recognized")
+
         if result == "Good bye!":
             print("Good bye!")
             break
+
 #------------------------------------------------------------------
             
 # Декоратор для Обробки командної строки
