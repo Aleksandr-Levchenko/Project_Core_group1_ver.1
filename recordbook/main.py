@@ -1,7 +1,7 @@
 from pathlib import Path
 import os, sys
 import platform  # для clearscrean()
-from recordbook.RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException
+from recordbook.RecordBook import AddressBook, Record, Name, Phone, Email, Birthday, Address, PhoneException, BirthdayException, EmailException, AbstractUI, ConsoleUI
 from recordbook.clean import sort_main
 from recordbook.note_book import NoteBook, NoteRecord, Note, Tag
 from datetime import datetime
@@ -21,16 +21,18 @@ path_note = "n_book.json"
 
 book = AddressBook()
 note_book = NoteBook()
+ui = AbstractUI(book)
 
 # Головна функція роботи CLI(Command Line Interface - консольного скрипту) 
-def main():    
+def main(): 
+    
     note_book.load_data(path_note)
     cmd = ""
     clear_screen("")
     print("[bold white]CLI version 12.0[/bold white]")  
     print("[white]Run >> [/white][bold red]help[/bold red] - list of the commands")
     load_phoneDB(path_book)
-    
+    ui.run()
     # головний цикл обробки команд користувача
     while True:
         # 1. Отримаємо команду від користувача
@@ -300,14 +302,7 @@ def func_all_phone(_)->str:
         console = Console()
         _ = [table.add_row(str(record.name.value), str(', '.join(map(lambda phone: phone.value, record.phones))), str(record.email.value), str(record.birthday.value), str(record.address.value)) for record in book.data.values()]
         console.print(table)
-        return ""
-        
-        # старий варіант друку таблиці
-        # result = ""
-        # result = "\n".join([f"{n}|{record.birthday.value}|{', '.join(map(lambda phone: phone.value, record.phones))}" for n, record in book.data.items()])
-        # if result == "": return "The database is empty"
-        # else: return result
-    
+        return ""   
 
 #=========================================================
 # >> show book /N
@@ -637,9 +632,6 @@ OPERATIONS = {"good bye": func_exit, "close": func_exit, "exit": func_exit,
               "show book": func_book_pages,
               "birthday": func_get_day_birthday,
               "help": func_help,
-            #   "help contact": func_help,
-            #   "help note": func_help,
-            #   "help sort": func_help,
               "add phone": add_phone,
               "add email" : add_email,
               "add address" : add_address,

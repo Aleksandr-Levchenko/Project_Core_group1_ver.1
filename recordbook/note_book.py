@@ -1,6 +1,7 @@
 from collections import UserDict
 from datetime import datetime
 import json
+from abc import ABC, abstractmethod
 
 class Tag:
     def __init__(self, value=None):        
@@ -28,8 +29,23 @@ class Note(Tag):
 class Key(Tag):
     pass
 
-class NoteRecord():    
-    def __init__(self, key: str, note: Note=None, tag: Tag=None):        
+
+class AbstractRecord(ABC):
+    @abstractmethod
+    def add_note(self, note: Note):
+        pass
+
+    @abstractmethod
+    def del_note(self, note):
+        pass
+
+    @abstractmethod
+    def change_note(self, old_note: Note, new_note: Note, tag: Tag):
+        pass
+
+
+class NoteRecord(AbstractRecord):
+    def __init__(self, key: str, note: Note = None, tag: Tag = None):
         self.key = key
         self.note = note
         self.tag = tag
@@ -55,8 +71,35 @@ class NoteRecord():
         self.tag = tag        
         return f"\nChanged note: {old_note}\nNew note: {new_note}\nNew Tag: {self.tag}\n"
 
-class NoteBook(UserDict):
-    def add_record(self, record: NoteRecord):
+
+class AbstractNoteBook(ABC, UserDict):
+    @abstractmethod
+    def add_record(self, record: AbstractRecord):
+        pass
+
+    @abstractmethod
+    def del_record(self, record: AbstractRecord):
+        pass
+
+    @abstractmethod
+    def iterator(self, group_size=15):
+        pass
+
+    @abstractmethod
+    def save_data(self, filename):
+        pass
+
+    @abstractmethod
+    def load_data(self, filename):
+        pass
+
+    @abstractmethod
+    def find_note(self, fragment: str):
+        pass
+
+
+class NoteBook(AbstractNoteBook):
+    def add_record(self, record: AbstractRecord):
         self.data[record.key] = record
         return f"\nAdded new record\nwith key: {record.key}\nNote: {record.note}\nTag: {record.tag}\n"
     
